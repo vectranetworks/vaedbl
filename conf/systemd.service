@@ -1,0 +1,13 @@
+[Unit]
+Description=Vectra Active Enforcement
+
+[Service]
+User=<user>
+WorkingDirectory=<path>
+Environment=FLASK_APP=vae_flask.py
+ExecStart=/usr/local/bin/flask run --host=0.0.0.0
+Restart=on-failure
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target

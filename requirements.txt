@@ -1,0 +1,3 @@
+flask
+tinydb
+# vectra_api_tools
