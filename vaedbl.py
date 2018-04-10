@@ -8,16 +8,18 @@ from scripts.utils import retrieve_hosts, retrieve_detections
 requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
+app.config['send_file_max_age_default'] = 60
 database = '.db.json'
 tinydb = TinyDB(database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
-brain = 'https://<hostname>'
+# To minimize security risk create service account with read only permissions
+brain = 'https://<brain>'
 token = '<token>'
 
 @app.route('/')
 def hello_world():
-    return 'VAE is running'
+    return "VAE is running"
 
 
 @app.route('/dbl/src')
@@ -38,11 +40,14 @@ def get_dbl_source():
 
     # retrieve_hosts(args, srcdb)
 
-    hosts = []
-    for host in srcdb:
-        hosts.append(host['ip'])
+    ip_addrs = []
+    ip_addrs += ["{ip}\n".format(ip=host['ip']) for host in srcdb]
 
-    return render_template('dbl.j2', list=set(hosts))
+    fh = open("static/src.txt", "w")
+    fh.writelines(ip_addrs)
+    fh.close()
+
+    return app.send_static_file("src.txt")
 
 
 @app.route('/dbl/dest')
@@ -68,11 +73,15 @@ def get_dbl_dst():
     # retrieve_detections(intel_args, destdb)
     # retrieve_detections(intel2_args, destdb)
 
-    ip_list = []
+    ip_addrs = []
     for detection in destdb:
-        ip_list += [ip for ip in detection['dst_ips']]
+        ip_addrs += ["{ip}\n".format(ip=host['ip']) for ip in detection['dst_ips']]
 
-    return render_template('dbl.j2', list=set(ip_list))
+    fh = open("static/dest.txt", "w")
+    fh.writelines(ip_addrs)
+    fh.close()
+
+    return app.send_static_file("dest.txt")
 
 
 if __name__ == '__main__':
