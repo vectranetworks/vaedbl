@@ -1,3 +1,4 @@
 flask
+lxml
 tinydb
 # vectra_api_tools
