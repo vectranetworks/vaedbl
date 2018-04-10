@@ -21,13 +21,13 @@ default credentials (please change on first use):
     - set brain url
     - set token
     - configure soure host query (tags, scores)
-    - configure destination host query (detections
+    - configure destination host query (detections)
 2. Edit conf/systemd.service
     - set user to non-privileged user
     - set working directory to location of repo
     - set flask path for ExecStart (will be different for global vs local install)
 3. copy conf/systemd.service to /etc/systemd/system/vae.service
-4. load vae.service
+4. touch /var/log/vae.log
 5. systemctl enable vae.service
 6. systemctl daemon-reload
 
@@ -50,3 +50,7 @@ for each detection. When using multiple detections, it is important to change th
 variable name and add a new 'retrieve_detections' function call that references
 the new variable.
 
+3. The default port for vaedbl is 8080. To change this port, edit the configuration 
+(systemd.conf or supervisor.conf) and restart the service
+
+4. After any configuration changes to vaedbl, ensure you restart the service
