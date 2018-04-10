@@ -7,8 +7,9 @@
 * libxml2-dev (apt)
 * libxslt-dev (apt)
 * flask (pip)
-* tinydb (pip)
+* lxml (pip)
 * requests (pip)
+* tinydb (pip)
 * vectra\_api\_tools (pip)
 
 ### Setup
@@ -32,13 +33,15 @@ default credentials (please change on first use):
 
 ### Configuration
 1. Source host: Queries for source hosts are configured under the dbl/src endpoint.
-There are two options availabe for retrieving sources hosts: tags, scores
-To configure tags, uncomment the 'Retrieve tagged hosts' section of vae_flask
-and add replace the <tag> placehodlder with ta comma separated list of tags.
-It is important to note that there sshould not be any spaces between values.
-To configure scores, uncomment the section marked 'Retrieve scored hosts' and replace
-the <threat> and <certainty> placeholders with the minimum threshold you would
-like to retrieve.
+There are two options availabe for retrieving sources hosts: tags, scores.
+Uncomment the 'Retrieve tagged hosts' section of vaedbl and add replace the
+<tag> placehodlder with a comma separated list of tags. It is important to note
+that there should not be any spaces between values. To configure scores, uncomment
+and replace the <threat> and <certainty> placeholders with the minimum threshold you
+would like to retrieve.
+
+Tags and Scores are mutually exclusive, so if you would like to disable either option,
+delete or comment out the appropriate parameter(s)
 
 2. Destination hosts: Queries for destination hosts are configured under the
 dbl/dest endpoint. Since only one detection type can be submitted per query,
