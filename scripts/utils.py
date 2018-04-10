@@ -11,7 +11,7 @@ def retrieve_hosts(args, db):
         hosts = vc.get_hosts(tags=args['tags']).json()
         logging.info("{count} hosts returned with tags: {tags}".format(count=hosts['count'], tags=args['tags']))
     if args.get('certainty_gte', None) or args.get('threat_gte', None):
-        hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte('threat_gte', 50)).json()
+        hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50)).json()
         logging.info("{count} hosts returned with score: certainty {certainty} threat {threat}".format(count=hosts['count'], 
             certainty=args.get('certainty_get', 50), threat=args.get('threat_get', 50)))
 
