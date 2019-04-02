@@ -75,7 +75,7 @@ def get_dbl_dst():
 
     ip_addrs = []
     for detection in destdb:
-        ip_addrs += ["{ip}\n".format(ip=host['ip']) for ip in detection['dst_ips']]
+        ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
 
     fh = open("static/dest.txt", "w")
     fh.writelines(ip_addrs)

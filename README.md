@@ -17,7 +17,7 @@ default credentials (please change on first use):
     username: vectra
     password: password
 
-1. Edit vae\_flask
+1. Edit vaedbl.py
     - set brain url
     - set token
     - configure soure host query (tags, scores)

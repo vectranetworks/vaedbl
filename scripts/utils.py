@@ -26,8 +26,8 @@ def retrieve_detections(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
     detections = vc.get_detections(detection_type=args['detection_type']).json()
 
-    logging.info("{count} detections were returned with detection {detection}".format(count=detections['count'], 
-        detection=args.get(['detection_type'], None)))
+    logging.info("{count} detections were returned with detection {detection}".format(
+        count=detections['count'], detection=args.get('detection_type', None)))
 
     for detection in detections['results']:
         ips = [detail['dst_ips'] for detail in detection['grouped_details']][0]
