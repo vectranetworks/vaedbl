@@ -17,6 +17,11 @@ logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)
 brain = 'https://<brain>'
 token = '<token>'
 
+# By default, only return active, untriaged detections.  To return both active and inactive detection, comment out the
+# det_state variable in intel_args
+det_state, det_triaged = 'active', 'false'
+
+
 @app.route('/')
 def hello_world():
     return "VAE is running"
@@ -56,17 +61,21 @@ def get_dbl_dst():
     tinydb.purge_table('dest')
 
     '''
-    Retieve detections
+    Retrieve detections
     '''
     # intel_args = {
     #     'url': brain,
     #     'token': token,
+    #     'state': det_state,
+    #     'triaged': det_triaged,
     #     'detection_type': '<detection>'
     # }
 
     # intel2_args = {
     #     'url': brain,
     #     'token': token,
+    #     'state': det_state,
+    #     'triaged': det_triaged,
     #     'detection_type': '<detection>'
     # }
 

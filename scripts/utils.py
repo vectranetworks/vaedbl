@@ -23,14 +23,33 @@ def retrieve_hosts(args, db):
 
 
 def retrieve_detections(args, db):
+    logging.info("retrieve_detections called")
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
-    detections = vc.get_detections(detection_type=args['detection_type']).json()
+
+    if bool(args.get('state', None)) and bool(args.get('triaged', None)):
+        detections = vc.get_detections(detection_type=args.get('detection_type', None), state=args['state'],
+                                       is_triaged=args['triaged'], tags=args.get('tags', None)).json()
+
+    elif args.get('triaged', None):
+        detections = vc.get_detections(detection_type=args.get('detection_type', None), is_triaged=args['triaged'],
+                                       tags=args.get('tags', None)).json()
+
+    else:
+        detections = vc.get_detections(detection_type=args.get('detection_type', None),
+                                       tags=args.get('tags', None)).json()
 
     logging.info("{count} detections were returned with detection {detection}".format(
         count=detections['count'], detection=args.get('detection_type', None)))
 
     for detection in detections['results']:
-        ips = [detail['dst_ips'] for detail in detection['grouped_details']][0]
+        if detection['detection_type'] == 'Suspect Domain Activity':
+            ips = []
+            for detail in detection['grouped_details']:
+                ips += detail['dns_response'].split(',') if detail['dns_response'] else []
+            ips = list(set(ips))
+        else:
+            ips = detection['summary']['dst_ips']
+
         db.insert({"id": detection['id'], 'dst_ips': ips})
         logging.info(str(ips) + ' added to block list')
 
