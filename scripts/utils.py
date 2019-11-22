@@ -16,6 +16,7 @@ def retrieve_hosts(args, db):
             certainty=args.get('certainty_get', 50), threat=args.get('threat_get', 50)))
 
     for host in hosts['results']:
+        logging.info('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
         db.insert({"id": host['id'], "name": host['name'], 'ip': host['last_source']})
         logging.info('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
@@ -50,6 +51,7 @@ def retrieve_detections(args, db):
         else:
             ips = detection['summary']['dst_ips']
 
+        logging.debug('det_id:{}, dst_ips:{}'.format(detection['id'], ips))
         db.insert({"id": detection['id'], 'dst_ips': ips})
         logging.info(str(ips) + ' added to block list')
 

@@ -9,8 +9,10 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
-database = '.db.json'
-tinydb = TinyDB(database)
+src_database = '.src_db.json'
+tinydb_src = TinyDB(src_database)
+dest_database = '.dest_db.json'
+tinydb_dest = TinyDB(dest_database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 # To minimize security risk create service account with read only permissions
@@ -29,8 +31,8 @@ def hello_world():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    srcdb = tinydb.table('src')
-    tinydb.purge_table('src')
+    srcdb = tinydb_src.table('src')
+    tinydb_src.purge_table('src')
 
     '''
     Retrieve src hosts
@@ -57,8 +59,8 @@ def get_dbl_source():
 
 @app.route('/dbl/dest')
 def get_dbl_dst():
-    destdb = tinydb.table('dest')
-    tinydb.purge_table('dest')
+    destdb = tinydb_dest.table('dest')
+    tinydb_dest.purge_table('dest')
 
     '''
     Retrieve detections

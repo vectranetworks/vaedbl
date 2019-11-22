@@ -1,3 +1,4 @@
-.db.json
+.*.json
 *.pyc
 .gitignore
+.DS_Store
