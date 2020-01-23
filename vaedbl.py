@@ -49,6 +49,7 @@ def get_dbl_source():
 
     ip_addrs = []
     ip_addrs += ["{ip}\n".format(ip=host['ip']) for host in srcdb]
+    ip_addrs = set(ip_addrs)
 
     fh = open("static/src.txt", "w")
     fh.writelines(ip_addrs)
@@ -87,6 +88,7 @@ def get_dbl_dst():
     ip_addrs = []
     for detection in destdb:
         ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
+    ip_addrs = set(ip_addrs)
 
     fh = open("static/dest.txt", "w")
     fh.writelines(ip_addrs)
