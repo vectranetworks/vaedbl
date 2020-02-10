@@ -9,13 +9,20 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
-database = '.db.json'
-tinydb = TinyDB(database)
+src_database = '.src_db.json'
+tinydb_src = TinyDB(src_database)
+dest_database = '.dest_db.json'
+tinydb_dest = TinyDB(dest_database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 # To minimize security risk create service account with read only permissions
 brain = 'https://<brain>'
 token = '<token>'
+
+# By default, only return active, untriaged detections.  To return both active and inactive detection, comment out the
+# det_state variable in intel_args
+det_state, det_triaged = 'active', 'false'
+
 
 @app.route('/')
 def hello_world():
@@ -24,8 +31,8 @@ def hello_world():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    srcdb = tinydb.table('src')
-    tinydb.purge_table('src')
+    srcdb = tinydb_src.table('src')
+    tinydb_src.purge_table('src')
 
     '''
     Retrieve src hosts
@@ -42,6 +49,7 @@ def get_dbl_source():
 
     ip_addrs = []
     ip_addrs += ["{ip}\n".format(ip=host['ip']) for host in srcdb]
+    ip_addrs = set(ip_addrs)
 
     fh = open("static/src.txt", "w")
     fh.writelines(ip_addrs)
@@ -52,21 +60,25 @@ def get_dbl_source():
 
 @app.route('/dbl/dest')
 def get_dbl_dst():
-    destdb = tinydb.table('dest')
-    tinydb.purge_table('dest')
+    destdb = tinydb_dest.table('dest')
+    tinydb_dest.purge_table('dest')
 
     '''
-    Retieve detections
+    Retrieve detections
     '''
     # intel_args = {
     #     'url': brain,
     #     'token': token,
+    #     'state': det_state,
+    #     'triaged': det_triaged,
     #     'detection_type': '<detection>'
     # }
 
     # intel2_args = {
     #     'url': brain,
     #     'token': token,
+    #     'state': det_state,
+    #     'triaged': det_triaged,
     #     'detection_type': '<detection>'
     # }
 
@@ -75,7 +87,8 @@ def get_dbl_dst():
 
     ip_addrs = []
     for detection in destdb:
-        ip_addrs += ["{ip}\n".format(ip=host['ip']) for ip in detection['dst_ips']]
+        ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
+    ip_addrs = set(ip_addrs)
 
     fh = open("static/dest.txt", "w")
     fh.writelines(ip_addrs)
