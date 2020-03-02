@@ -1,7 +1,19 @@
 #! /usr/bin/env python
 
-#  import logging
+# import logging
 import vat.vectra as vectra
+from datetime import datetime, timedelta
+import os
+
+
+def update_needed(db_name, minutes):
+    #  Returns False when file has been updated less than minutes, otherwise False
+    if os.path.exists(db_name):
+        last_modified = datetime.fromtimestamp(os.path.getmtime(db_name))
+        logging.debug('Update_Needed:{}'.format((datetime.now() - timedelta(minutes=minutes)) > last_modified))
+        return (datetime.now() - timedelta(minutes=minutes)) > last_modified
+    else:
+        return True
 
 
 def retrieve_hosts(args, db):

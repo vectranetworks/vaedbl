@@ -26,10 +26,12 @@ default credentials (please change on first use):
     - set user to non-privileged user
     - set working directory to location of repo
     - set flask path for ExecStart (will be different for global vs local install)
+3.  Edit conf/supervisor.conf
+    -set environment=FLASK_APP= to full path to vaedbl.py
 3. copy conf/systemd.service to /etc/systemd/system/vae.service
-4. touch /var/log/vae.log
-5. systemctl enable vae.service
-6. systemctl daemon-reload
+5. touch /var/log/vae.log
+6. systemctl enable vae.service
+7. systemctl daemon-reload
 
 ### Configuration
 1. Source host: Queries for source hosts are configured under the dbl/src endpoint.
