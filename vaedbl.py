@@ -18,7 +18,7 @@ src_database = '.src_db.json'
 tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
-logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 
 @app.route('/')

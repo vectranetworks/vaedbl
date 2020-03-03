@@ -30,7 +30,7 @@ def mailer(mail_args, block_list, subject):
         s = smtplib.SMTP(mail_args.get('smtp_server'), mail_args.get('port', 25))
 
         if bool(mail_args.get('username', None) and mail_args.get('password', None)):
-            s.login(USERNAME, PASSWORD)
+            s.login(mail_args.get('username', mail_args.get('password')))
 
         s.send_message(msg)
         s.quit()
@@ -52,7 +52,7 @@ def retrieve_hosts(args, db):
     if args.get('certainty_gte', None) or args.get('threat_gte', None):
         hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50)).json()
         logging.debug("{count} hosts returned with score: certainty {certainty} threat {threat}".format(
-            count=hosts['count'], certainty=args.get('certainty_get', 50), threat=args.get('threat_get', 50)))
+            count=hosts['count'], certainty=args.get('certainty_gte', 50), threat=args.get('threat_gte', 50)))
 
         if len(hosts['results']) > 0:
             for host in hosts['results']:
