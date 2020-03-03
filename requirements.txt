@@ -2,4 +2,4 @@ flask
 lxml
 tinydb
 requests
-# vectra_api_tools
+vectra_api_tools

@@ -20,18 +20,18 @@ def update_needed(db_name, minutes):
 
 
 def mailer(mail_args, block_list, subject):
-    with open(blocklist) as fp:
+    with open(block_list) as fp:
         msg = EmailMessage()
 
         msg["From"] = mail_args.get('sender')
-        msg["Subject"] = 'Blocked {} IP addresses, {}'.format(subject, datetime.datetime.now()
-                                                              .strftime("%Y-%m-%d, %H:%M:%S"))
+        msg["Subject"] = 'Blocked {} IP addresses, {}'.format(subject, datetime.now().strftime("%Y-%m-%d, %H:%M:%S"))
         msg["To"] = mail_args.get('recipient')
         msg.set_content(fp.read())
-        msg.add_attachment(open(filename, "r").read(), filename="log_file.txt")
+        s = smtplib.SMTP(mail_args.get('smtp_server'), mail_args.get('port', 25))
 
-        s = smtplib.SMTP(mail_args.get('smtp_server'))
-        #  s.login(USERNAME, PASSWORD)
+        if bool(mail_args.get('username', None) and mail_args.get('password', None)):
+            s.login(USERNAME, PASSWORD)
+
         s.send_message(msg)
         s.quit()
 
@@ -95,4 +95,3 @@ def retrieve_detections(args, db):
         logging.debug(str(ips) + ' added to block list')
 
     return
-j
