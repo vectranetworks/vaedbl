@@ -6,7 +6,7 @@ try:
     from tinydb import TinyDB
     from flask import Flask, render_template
     from scripts.utils import retrieve_hosts, retrieve_detections, update_needed
-    from config import bogon, args, det_state, det_triaged
+    from config import bogon, args, intel_args, active_state, det_triaged
 except Exception as error:
     print("\nMissing import requirements: %s\n" % str(error))
 
@@ -49,10 +49,11 @@ def get_dbl_source():
 
             if ip_addrs:
                 fh.writelines(ip_addrs)
-            elif bogon:
+                fh.close()
+            else:
                 fh.writelines(bogon)
-            fh.close()
-        elif bogon:
+                fh.close()
+        else:
             fh = open("static/src.txt", "w")
             fh.writelines(bogon)
             fh.close()
@@ -63,7 +64,7 @@ def get_dbl_source():
 @app.route('/dbl/dest')
 def get_dbl_dst():
 
-    if not update_needed(os.path.abspath(dest_database), 5):
+    if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
         tinydb_dest.purge_table('dest')
@@ -71,33 +72,29 @@ def get_dbl_dst():
         '''
         Retrieve detections
         '''
-        # intel_args = {
-        #     'url': brain,
-        #     'token': token,
-        #     'state': det_state,
-        #     'triaged': det_triaged,
-        #     'detection_type': '<detection>'
-        # }
 
-        # intel2_args = {
-        #     'url': brain,
-        #     'token': token,
-        #     'state': det_state,
-        #     'triaged': det_triaged,
-        #     'detection_type': '<detection>'
-        # }
+        if intel_args:
+            for intel in intel_args:
+                retrieve_detections(intel, destdb)
 
-        # retrieve_detections(intel_args, destdb)
-        # retrieve_detections(intel2_args, destdb)
+            ip_addrs = []
+            for detection in destdb:
+                ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
+            ip_addrs = set(ip_addrs)
 
-        ip_addrs = []
-        for detection in destdb:
-            ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
-        ip_addrs = set(ip_addrs)
+            fh = open("static/dest.txt", "w")
 
-        fh = open("static/dest.txt", "w")
-        fh.writelines(ip_addrs)
-        fh.close()
+            if ip_addrs:
+                fh.writelines(ip_addrs)
+                fh.close()
+            else:
+
+                fh.writelines(bogon)
+                fh.close()
+        else:
+            fh = open("static/src.txt", "w")
+            fh.writelines(bogon)
+            fh.close()
 
     return app.send_static_file("dest.txt")
 
