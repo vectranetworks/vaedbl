@@ -5,8 +5,8 @@ import os
 try:
     from tinydb import TinyDB
     from flask import Flask, render_template
-    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed
-    from config import bogon, args, intel_args, active_state, det_triaged
+    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer
+    from config import bogon, args, intel_args, active_state, det_triaged, mail
 except Exception as error:
     print("\nMissing import requirements: %s\n" % str(error))
 
@@ -50,6 +50,8 @@ def get_dbl_source():
             if ip_addrs:
                 fh.writelines(ip_addrs)
                 fh.close()
+                if mail:
+                    mailer(mail, os.path.abspath('static/src.txt'), 'source')
             else:
                 fh.writelines(bogon)
                 fh.close()
@@ -87,12 +89,14 @@ def get_dbl_dst():
             if ip_addrs:
                 fh.writelines(ip_addrs)
                 fh.close()
+                if mail:
+                    mailer(mail, os.path.abspath('static/dest.txt'), 'destination')
             else:
 
                 fh.writelines(bogon)
                 fh.close()
         else:
-            fh = open("static/src.txt", "w")
+            fh = open("static/dest.txt", "w")
             fh.writelines(bogon)
             fh.close()
 

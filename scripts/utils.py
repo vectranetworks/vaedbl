@@ -4,6 +4,8 @@ import logging
 import vat.vectra as vectra
 from datetime import datetime, timedelta
 import os
+import smtplib
+from email.message import EmailMessage
 
 
 def update_needed(db_name, minutes):
@@ -15,6 +17,23 @@ def update_needed(db_name, minutes):
     else:
         logging.debug('OS Path does not exist{}'.format(db_name))
         return True
+
+
+def mailer(mail_args, block_list, subject):
+    with open(blocklist) as fp:
+        msg = EmailMessage()
+
+        msg["From"] = mail_args.get('sender')
+        msg["Subject"] = 'Blocked {} IP addresses, {}'.format(subject, datetime.datetime.now()
+                                                              .strftime("%Y-%m-%d, %H:%M:%S"))
+        msg["To"] = mail_args.get('recipient')
+        msg.set_content(fp.read())
+        msg.add_attachment(open(filename, "r").read(), filename="log_file.txt")
+
+        s = smtplib.SMTP(mail_args.get('smtp_server'))
+        #  s.login(USERNAME, PASSWORD)
+        s.send_message(msg)
+        s.quit()
 
 
 def retrieve_hosts(args, db):
