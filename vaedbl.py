@@ -1,9 +1,14 @@
 import logging
 import requests
+import os
 
-from tinydb import TinyDB
-from flask import Flask, render_template
-from scripts.utils import retrieve_hosts, retrieve_detections
+try:
+    from tinydb import TinyDB
+    from flask import Flask, render_template
+    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer
+    from config import bogon, args, intel_args, active_state, det_triaged, mail
+except Exception as error:
+    print("\nMissing import requirements: %s\n" % str(error))
 
 requests.packages.urllib3.disable_warnings()
 
@@ -15,14 +20,6 @@ dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
-# To minimize security risk create service account with read only permissions
-brain = 'https://<brain>'
-token = '<token>'
-
-# By default, only return active, untriaged detections.  To return both active and inactive detection, comment out the
-# det_state variable in intel_args
-det_state, det_triaged = 'active', 'false'
-
 
 @app.route('/')
 def hello_world():
@@ -31,68 +28,77 @@ def hello_world():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    srcdb = tinydb_src.table('src')
-    tinydb_src.purge_table('src')
+    if update_needed(os.path.abspath(src_database), 5):
+        #  If DB last updated longer than 5 minutes
 
-    '''
-    Retrieve src hosts
-    '''
-    # args = {
-    #     'url': brain,
-    #     'token': token,
-    #     'tags': '<tags>',
-    #     'certainty_gte': 50,
-    #     'threat_gte': 50
-    # }
+        srcdb = tinydb_src.table('src')
+        tinydb_src.purge_table('src')
 
-    # retrieve_hosts(args, srcdb)
+        '''
+        Retrieve src hosts
+        '''
 
-    ip_addrs = []
-    ip_addrs += ["{ip}\n".format(ip=host['ip']) for host in srcdb]
-    ip_addrs = set(ip_addrs)
+        if args:
+            retrieve_hosts(args, srcdb)
 
-    fh = open("static/src.txt", "w")
-    fh.writelines(ip_addrs)
-    fh.close()
+            ip_addrs = []
+            ip_addrs += ["{ip}\n".format(ip=host['ip']) for host in srcdb]
+            ip_addrs = set(ip_addrs)
+
+            fh = open("static/src.txt", "w")
+
+            if ip_addrs:
+                fh.writelines(ip_addrs)
+                fh.close()
+                if mail:
+                    mailer(mail, os.path.abspath('static/src.txt'), 'source')
+            else:
+                fh.writelines(bogon)
+                fh.close()
+        else:
+            fh = open("static/src.txt", "w")
+            fh.writelines(bogon)
+            fh.close()
 
     return app.send_static_file("src.txt")
 
 
 @app.route('/dbl/dest')
 def get_dbl_dst():
-    destdb = tinydb_dest.table('dest')
-    tinydb_dest.purge_table('dest')
 
-    '''
-    Retrieve detections
-    '''
-    # intel_args = {
-    #     'url': brain,
-    #     'token': token,
-    #     'state': det_state,
-    #     'triaged': det_triaged,
-    #     'detection_type': '<detection>'
-    # }
+    if update_needed(os.path.abspath(dest_database), 5):
+        #  If DB last updated longer than 5 minutes
+        destdb = tinydb_dest.table('dest')
+        tinydb_dest.purge_table('dest')
 
-    # intel2_args = {
-    #     'url': brain,
-    #     'token': token,
-    #     'state': det_state,
-    #     'triaged': det_triaged,
-    #     'detection_type': '<detection>'
-    # }
+        '''
+        Retrieve detections
+        '''
 
-    # retrieve_detections(intel_args, destdb)
-    # retrieve_detections(intel2_args, destdb)
+        if intel_args:
+            for intel in intel_args:
+                retrieve_detections(intel, destdb)
 
-    ip_addrs = []
-    for detection in destdb:
-        ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
-    ip_addrs = set(ip_addrs)
+            ip_addrs = []
+            for detection in destdb:
+                ip_addrs += ["{ip}\n".format(ip=ip) for ip in detection['dst_ips']]
+            ip_addrs = set(ip_addrs)
 
-    fh = open("static/dest.txt", "w")
-    fh.writelines(ip_addrs)
-    fh.close()
+            fh = open("static/dest.txt", "w")
+
+            if ip_addrs:
+                fh.writelines(ip_addrs)
+                fh.close()
+                if mail:
+                    mailer(mail, os.path.abspath('static/dest.txt'), 'destination')
+            else:
+
+                fh.writelines(bogon)
+                fh.close()
+        else:
+            fh = open("static/dest.txt", "w")
+            fh.writelines(bogon)
+            fh.close()
 
     return app.send_static_file("dest.txt")
 
