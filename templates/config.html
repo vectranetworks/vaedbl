@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      label {
+        display: inline-block;
+        text-align: left;
+        width: 200px;
+      }
+
+      input[type="text"] {
+        width: 275px;
+        margin-bottom: 3px;
+      }
+      body {
+        margin-left: 1em;
+      }
+      input[type="submit"] {
+        background-color: #f04e23;
+        color: white;
+        border-radius: 3px;
+        margin-top: 10px;
+        width: 160px;
+        height: 35px;
+      }
+      select {
+        margin-bottom: 3px;
+      }
+      div.indent {
+        margin-left: 1em;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <h1 style="color: #f04e23;">Palo Alto Networks Configuration</h1>
+      <div class="indent">
+        <form method="post">
+          <h2>Required Configuration Parameters</h2>
+          <div class="indent">
+            <label for="appliance">Vectra Appliance</label>
+            <input
+              type="text"
+              id="appliance"
+              placeholder="Hostname or IP address"
+            /><br />
+
+            <label for="firewall">Firewall</label>
+            <input
+              type="text"
+              id="firewall"
+              placeholder="Hostname or IP address"
+            /><br />
+
+            <label for="dbl">Dynamic Block List</label>
+            <input
+              type="text"
+              id="dbl"
+              placeholder="Name of dynamic block list"
+            /><br />
+
+            <label for="pos">PanOS version</label>
+            <select id="pos" name="pos_version">
+              <option value="9.1">9.1</option>
+              <option value="9.0">9.0</option>
+              <option value="8.1">8.1</option>
+              <option value="8.0">8.0</option>
+              <option value="7.1">7.1</option>
+              <option value="7.0">7.0</option>
+              <option value="6.0">6.0</option>
+              <option value="5.5">5.5</option>
+              <option value="5.1">5.1</option>
+              <option value="5.0">5.0</option>
+              <option value="4.2">4.2</option>
+              <option value="4.1">4.1</option>
+              <option value="4.0">4.0</option>
+              <option value="3.2">3.2</option>
+              <option value="3.1">3.1</option>
+              <option value="3.0">3.0</option>
+              <option value="2.0">2.0</option>
+            </select>
+          </div>
+          <h2>Tags (optional)</h2>
+          <div class="indent">
+            <label for="tags">Tags</label>
+            <input
+              type="text"
+              id="tags"
+              placeholder="Tags in a comma separated list with no spaces"
+            /><br />
+          </div>
+          <h2>Detection and Certainty Score (optional)</h2>
+          <div class="indent">
+            <label for="typ">Detection Type</label>
+            <select id="typ" name="det_type">
+              <option value="">None</option>
+            </select>
+            <br />
+
+            <label for="dcs">Detection Certainty Score</label>
+            <input type="text" id="dcs" style="width: 50px;" /><br />
+          </div>
+          <h2>Threat and Certainty Score (optional)</h2>
+          <div class="indent">
+            <label for="ts">Threat Score</label>
+            <input type="text" id="ts" style="width: 50px;" /><br />
+
+            <label for="cs">Certainty Score</label>
+            <input type="text" id="cs" style="width: 50px;" /><br /><br />
+          </div>
+          <input type="submit" value="Submit Configuration" />
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
