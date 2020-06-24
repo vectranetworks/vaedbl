@@ -29,7 +29,6 @@
       div.indent {
         margin-left: 1em;
       }
-
     </style>
   </head>
   <body>
@@ -42,6 +41,7 @@
             <label for="appliance">Vectra Appliance</label>
             <input
               type="text"
+              name="appliance"
               id="appliance"
               placeholder="Hostname or IP address"
             /><br />
@@ -49,6 +49,7 @@
             <label for="firewall">Firewall</label>
             <input
               type="text"
+              name="firewall"
               id="firewall"
               placeholder="Hostname or IP address"
             /><br />
@@ -56,6 +57,7 @@
             <label for="dbl">Dynamic Block List</label>
             <input
               type="text"
+              name="dbl"
               id="dbl"
               placeholder="Name of dynamic block list"
             /><br />
@@ -86,6 +88,7 @@
             <label for="tags">Tags</label>
             <input
               type="text"
+              name="tags"
               id="tags"
               placeholder="Tags in a comma separated list with no spaces"
             /><br />
@@ -99,15 +102,20 @@
             <br />
 
             <label for="dcs">Detection Certainty Score</label>
-            <input type="text" id="dcs" style="width: 50px;" /><br />
+            <input type="text" name="dcs" id="dcs" style="width: 50px;" /><br />
           </div>
           <h2>Threat and Certainty Score (optional)</h2>
           <div class="indent">
             <label for="ts">Threat Score</label>
-            <input type="text" id="ts" style="width: 50px;" /><br />
+            <input type="text" name="ts" id="ts" style="width: 50px;" /><br />
 
             <label for="cs">Certainty Score</label>
-            <input type="text" id="cs" style="width: 50px;" /><br /><br />
+            <input
+              type="text"
+              name="cs"
+              id="cs"
+              style="width: 50px;"
+            /><br /><br />
           </div>
           <input type="submit" value="Submit Configuration" />
         </form>
