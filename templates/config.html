@@ -86,11 +86,12 @@
               name="bogon"
               id="bogon"
               placeholder="IP address"
+              value="{{CONFIG['bogon']}}"
             /><br />
           </div>
           <h2>Tags (optional)</h2>
           <div class="indent">
-            <label class="regular" for="tags">Tags</label>
+            <label class="regular" for="tags">Tags (comma separated)</label>
             <input
               type="text"
               name="tags"
@@ -104,86 +105,16 @@
             <span>Detection Types</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
+                  {% for det_type in DET_TYPES %}
                 <input
                   type="checkbox"
-                  name="external_remote_access"
-                  value="era"
-                  checked="{{'era' in CONFIG['detection_types']}}"
-                /><label for="external_remote_access"
-                  >External Remote Access</label
-                ><br />
-                <input
-                  type="checkbox"
-                  name="hidden_dns_tunnel"
-                  value="dns_tunnel"
-                  checked="{{'dns_tunnel' in CONFIG['detection_types']}}"
-                /><label for="hidden_dns_tunnel">Hidden DNS Tunnel</label><br />
-                <input
-                  type="checkbox"
-                  name="hidden_http_tunnel"
-                  value="http_tunnel"
-                  checked="{{'http_tunnel' in CONFIG['detection_types']}}"
-                /><label for="hidden_http_tunnel">Hidden HTTP Tunnel</label
-                ><br />
-                <input
-                  type="checkbox"
-                  name="hidden_https_tunnel"
-                  value="https_tunnel"
-                  checked="{{'https_tunnel' in CONFIG['detection_types']}}"
-                /><label for="hidden_https_tunnel">Hidden HTTPS Tunnel</label
-                ><br />
-                <input
-                  type="checkbox"
-                  name="malware update"
-                  value="malware"
-                  checked="{{'malware' in CONFIG['detection_types']}}"
-                /><label for="malware update">Malware Update</label><br />
-                <input
-                  type="checkbox"
-                  name="peer_to_peer"
-                  value="p2p"
-                  checked="{{'p2p' in CONFIG['detection_types']}}"
-                /><label for="peer_to_peer">Peer-To-Peer</label><br />
-                <input
-                  type="checkbox"
-                  name="stealth_http_post"
-                  value="stealth_http"
-                  checked="{{'stealth_http' in CONFIG['detection_types']}}"
-                /><label for="stealth_http_post">Stealth HTTP Post</label><br />
-                <input
-                  type="checkbox"
-                  name="suspect_domain_activity"
-                  value="sda"
-                  checked="{{'sda' in CONFIG['detection_types']}}"
-                /><label for="suspect_domain_activity"
-                  >Suspect Domain Activity</label
-                ><br />
-                <input
-                  type="checkbox"
-                  name="suspicious_http"
-                  value="susp_http"
-                  checked="{{'susp_http' in CONFIG['detection_types']}}"
-                /><label for="suspicious_http">Suspicious HTTP</label><br />
-                <input
-                  type="checkbox"
-                  name="tor_activity"
-                  value="tor"
-                  checked="{{'tor' in CONFIG['detection_types']}}"
-                /><label for="tor_activity">TOR Activity</label><br />
-                <input
-                  type="checkbox"
-                  name="suspicious_relay"
-                  value="susp_relay"
-                  checked="{{'susp_relay' in CONFIG['detection_types']}}"
-                /><label for="suspicious_relay">Suspicious Relay</label><br />
-                <input
-                  type="checkbox"
-                  name="multi_home_fronted_tunnel"
-                  value="mhft"
-                  checked="{{'mhft' in CONFIG['detection_types']}}"
-                /><label for="multi_home_fronted_tunnel"
-                  >Multi-home Fronted Tunnel</label
-                ><br />
+                  name="{{det_type[0]}}",
+                  value="{{det_type[1]}}"
+                  {% if det_type[1] in CONFIG.detection_types %}
+                  , checked
+                  {% endif %}
+                  /><label for="{{det_type[0]}}">{{det_type[1]}}</label><br />
+                  {% endfor %}
               </div>
             </div>
             <br />

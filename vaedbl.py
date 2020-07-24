@@ -19,9 +19,9 @@ src_database = '.src_db.json'
 tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
-logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
+# logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
-detection_types = ['External Remote Access', 'Hidden DNS Tunnel', 'Hidden HTTP Tunnel', 'Hidden HTTPS Tunnel', 'Malware Update', 'Peer-To-Peer', 'Stealth HTTP Post', 'Suspect Domain Activity', 'Suspicious HTTP', 'TOR Activity', 'Suspicious Relay', 'Multi-home Fronted Tunnel']
+detection_types = [('external_remote_access', 'External Remote Access'), ('hidden_dns_tunnel', 'Hidden DNS Tunnel'), ('hidden_http_tunnel', 'Hidden HTTP Tunnel'), ('hidden_https_tunnel', 'Hidden HTTPS Tunnel'), ('malware_update', 'Malware Update'), ('peer_to_peer', 'Peer-To-Peer'), ('stealth_https_post', 'Stealth HTTP Post'), ('suspect_domain_activity', 'Suspect Domain Activity'), ('suspicios_http', 'Suspicious HTTP'), ('tor_activity', 'TOR Activity'), ('suspcious_relay', 'Suspicious Relay'), ('multi_home_fronted_tunnel', 'Multi-home Fronted Tunnel')]
 
 @app.route('/')
 def hello_world():
@@ -32,7 +32,7 @@ def config():
     config = {}
     with open('config.json') as json_config:
         config = json.load(json_config)
-    return render_template('config.html', CONFIG=config)
+    return render_template('config.html', CONFIG=config, DET_TYPES=detection_types)
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -41,6 +41,7 @@ def submit():
         config = json.load(json_config)
     
     form_data = request.form
+    print(form_data)
 
     config['brain'] = form_data.get('appliance')
     config['token'] = form_data.get('token')
@@ -48,13 +49,13 @@ def submit():
     config['det_triaged'] = form_data.get('')
     config['bogon'] = form_data.get('bogon')
 
-    config['tags'] = form_data.get('tags').replace(old=', ', new=',').split(separator=',')
+    config['tags'] = form_data.get('tags').replace(', ', ',').split(',')
     config['certainty_gte'] = form_data.get('cs')
     config['threat_gte'] = form_data.get('ts')
     config['detection_types'] = []
-    for detection_type in detection_types:
-        if form_data.get(detection_type):
-            config['detection_types'].append(detection_type)
+    for det_type in detection_types:
+        if form_data.get(det_type[0]):
+            config['detection_types'].append(det_type[1])
 
     config_mail = config['mail']
     config_mail['smtp_server'] = form_data.get('smtp_server')
@@ -63,8 +64,10 @@ def submit():
     config_mail['password'] = form_data.get('password')
     config_mail['sender'] = form_data.get('mail_from')
     config_mail['recipient'] = form_data.get('mail_to')
+    with open('config.json', mode='w') as json_config:
+        print(config)
+        json.dump(config, json_config, indent=4)
 
-    vectra_appliance = request.form.get('appliance')
     return redirect(url_for('hello_world'))
 
 @app.route('/dbl/src')
