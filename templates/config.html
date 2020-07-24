@@ -1,176 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
+  <head>
     <style>
-        label.regular {
-            display: inline-block;
-            text-align: left;
-            width: 200px;
-        }
+      label.regular {
+        display: inline-block;
+        text-align: left;
+        width: 200px;
+      }
 
-        input[type="text"] {
-            width: 275px;
-            margin-bottom: 3px;
-        }
+      input[type="text"] {
+        width: 275px;
+        margin-bottom: 3px;
+      }
 
-        body {
-            margin-left: 1em;
-        }
+      body {
+        margin-left: 1em;
+      }
 
-        button {
-            background-color: #f04e23;
-            color: white;
-            border-radius: 3px;
-            margin-top: 10px;
-            width: 160px;
-            height: 35px;
-        }
+      button {
+        background-color: #f04e23;
+        color: white;
+        border-radius: 3px;
+        margin-top: 10px;
+        width: 160px;
+        height: 35px;
+      }
 
-        select {
-            margin-bottom: 3px;
-        }
+      select {
+        margin-bottom: 3px;
+      }
 
-        div.indent {
-            margin-left: 1em;
-        }
+      div.indent {
+        margin-left: 1em;
+      }
 
-        input.small {
-            width: 50px;
-        }
+      input.small {
+        width: 50px;
+      }
 
-        div.checkbox-grid {
-            width: 570px;
-            column-count: 3;
-        }
+      div.checkbox-grid {
+        width: 570px;
+        column-count: 3;
+      }
 
-        span {
-            display: inline-block;
-            text-align: left;
-            width: 200px;
-            margin-bottom: 10px;
-        }
+      span {
+        display: inline-block;
+        text-align: left;
+        width: 200px;
+        margin-bottom: 10px;
+      }
 
-        /* input[type="checkbox"] {
+      /* input[type="checkbox"] {
             width: ;
         } */
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="page">
-        <h1 style="color: #f04e23;">Palo Alto Networks Configuration</h1>
-        <div class="indent">
-            <form method="post" id="form1">
-                <h2>Required Configuration Parameters</h2>
-                <div class="indent">
-                    <label class="regular" for="appliance">Vectra Appliance</label>
-                    <input type="text" name="appliance" id="appliance" placeholder="Hostname or IP address" /><br />
+      <h1 style="color: #f04e23;">Palo Alto Networks Configuration</h1>
+      <div class="indent">
+        <form method="post" id="configuration" action="/submit">
+          <h2>Required Configuration Parameters</h2>
+          <div class="indent">
+            <label class="regular" for="appliance">Vectra Appliance</label>
+            <input
+              type="text"
+              name="appliance"
+              id="appliance"
+              placeholder="Hostname or IP address"
+              value="{{CONFIG['brain']}}"
+            /><br />
 
-                    <label class="regular" for="firewall">Firewall</label>
-                    <input type="text" name="firewall" id="firewall" placeholder="Hostname or IP address" /><br />
+            <label class="regular" for="token">API Token</label>
+            <input
+              type="text"
+              name="token"
+              id="token"
+              placeholder="Cognito API Token"
+            /><br />
 
-                    <label class="regular" for="dbl">Dynamic Block List</label>
-                    <input type="text" name="dbl" id="dbl" placeholder="Name of dynamic block list" /><br />
+            <label class="regular" for="bogon">Bogon</label>
+            <input
+              type="text"
+              name="bogon"
+              id="bogon"
+              placeholder="IP address"
+            /><br />
+          </div>
+          <h2>Tags (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="tags">Tags</label>
+            <input
+              type="text"
+              name="tags"
+              id="tags"
+              placeholder="Tags in a comma separated list with no spaces"
+              value="{{', '.join(CONFIG['tags'])}}"
+            /><br />
+          </div>
+          <h2>Detection Type (optional)</h2>
+          <div class="indent">
+            <span>Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                <input
+                  type="checkbox"
+                  name="external_remote_access"
+                  value="era"
+                  checked="{{'era' in CONFIG['detection_types']}}"
+                /><label for="external_remote_access"
+                  >External Remote Access</label
+                ><br />
+                <input
+                  type="checkbox"
+                  name="hidden_dns_tunnel"
+                  value="dns_tunnel"
+                  checked="{{'dns_tunnel' in CONFIG['detection_types']}}"
+                /><label for="hidden_dns_tunnel">Hidden DNS Tunnel</label><br />
+                <input
+                  type="checkbox"
+                  name="hidden_http_tunnel"
+                  value="http_tunnel"
+                  checked="{{'http_tunnel' in CONFIG['detection_types']}}"
+                /><label for="hidden_http_tunnel">Hidden HTTP Tunnel</label
+                ><br />
+                <input
+                  type="checkbox"
+                  name="hidden_https_tunnel"
+                  value="https_tunnel"
+                  checked="{{'https_tunnel' in CONFIG['detection_types']}}"
+                /><label for="hidden_https_tunnel">Hidden HTTPS Tunnel</label
+                ><br />
+                <input
+                  type="checkbox"
+                  name="malware update"
+                  value="malware"
+                  checked="{{'malware' in CONFIG['detection_types']}}"
+                /><label for="malware update">Malware Update</label><br />
+                <input
+                  type="checkbox"
+                  name="peer_to_peer"
+                  value="p2p"
+                  checked="{{'p2p' in CONFIG['detection_types']}}"
+                /><label for="peer_to_peer">Peer-To-Peer</label><br />
+                <input
+                  type="checkbox"
+                  name="stealth_http_post"
+                  value="stealth_http"
+                  checked="{{'stealth_http' in CONFIG['detection_types']}}"
+                /><label for="stealth_http_post">Stealth HTTP Post</label><br />
+                <input
+                  type="checkbox"
+                  name="suspect_domain_activity"
+                  value="sda"
+                  checked="{{'sda' in CONFIG['detection_types']}}"
+                /><label for="suspect_domain_activity"
+                  >Suspect Domain Activity</label
+                ><br />
+                <input
+                  type="checkbox"
+                  name="suspicious_http"
+                  value="susp_http"
+                  checked="{{'susp_http' in CONFIG['detection_types']}}"
+                /><label for="suspicious_http">Suspicious HTTP</label><br />
+                <input
+                  type="checkbox"
+                  name="tor_activity"
+                  value="tor"
+                  checked="{{'tor' in CONFIG['detection_types']}}"
+                /><label for="tor_activity">TOR Activity</label><br />
+                <input
+                  type="checkbox"
+                  name="suspicious_relay"
+                  value="susp_relay"
+                  checked="{{'susp_relay' in CONFIG['detection_types']}}"
+                /><label for="suspicious_relay">Suspicious Relay</label><br />
+                <input
+                  type="checkbox"
+                  name="multi_home_fronted_tunnel"
+                  value="mhft"
+                  checked="{{'mhft' in CONFIG['detection_types']}}"
+                /><label for="multi_home_fronted_tunnel"
+                  >Multi-home Fronted Tunnel</label
+                ><br />
+              </div>
+            </div>
+            <br />
+          </div>
+          <h2>Threat and Certainty Score (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="ts">Threat Score</label>
+            <input
+              class="small"
+              type="number"
+              name="ts"
+              id="ts"
+              value="{{CONFIG['threat_gte']}}"
+            /><br />
 
-                    <label class="regular" for="pos">PanOS version</label>
-                    <select id="pos" name="pos_version">
-                        <option value="9.1">9.1</option>
-                        <option value="9.0">9.0</option>
-                        <option value="8.1">8.1</option>
-                        <option value="8.0">8.0</option>
-                        <option value="7.1">7.1</option>
-                        <option value="7.0">7.0</option>
-                        <option value="6.0">6.0</option>
-                        <option value="5.5">5.5</option>
-                        <option value="5.1">5.1</option>
-                        <option value="5.0">5.0</option>
-                        <option value="4.2">4.2</option>
-                        <option value="4.1">4.1</option>
-                        <option value="4.0">4.0</option>
-                        <option value="3.2">3.2</option>
-                        <option value="3.1">3.1</option>
-                        <option value="3.0">3.0</option>
-                        <option value="2.0">2.0</option>
-                    </select>
-                </div>
-                <h2>Tags (optional)</h2>
-                <div class="indent">
-                    <label class="regular" for="tags">Tags</label>
-                    <input type="text" name="tags" id="tags"
-                        placeholder="Tags in a comma separated list with no spaces" /><br />
-                </div>
-                <h2>Detection and Certainty Score (optional)</h2>
-                <div class="indent">
-                    <span>Detection Types</span>
-                    <div class="indent">
-                        <div class="checkbox-grid" name="typ">
-                            <input type="checkbox" name="text1" value="value1" /><label for="text1">External Remote
-                                Access</label><br />
-                            <input type="checkbox" name="text2" value="value2" /><label for="text2">Hidden DNS
-                                Tunnel</label><br />
-                            <input type="checkbox" name="text3" value="value3" /><label for="text3">Hidden HTTP
-                                Tunnel</label><br />
-                            <input type="checkbox" name="text4" value="value4" /><label for="text4">Hidden HTTPS
-                                Tunnel</label><br />
-                            <input type="checkbox" name="text5" value="value5" /><label for="text5">Malware
-                                Update</label><br />
-                            <input type="checkbox" name="text6" value="value6" /><label
-                                for="text6">Peer-To-Peer</label><br />
-                            <input type="checkbox" name="text7" value="value7" /><label for="text7">Stealth HTTP
-                                Post</label><br />
-                            <input type="checkbox" name="text8" value="value8" /><label for="text8">Suspect Domain
-                                Activity</label><br />
-                            <input type="checkbox" name="text8" value="value8" /><label for="text8">Suspicious
-                                HTTP</label><br />
-                            <input type="checkbox" name="text8" value="value8" /><label for="text8">TOR
-                                Activity</label><br />
-                            <input type="checkbox" name="text8" value="value8" /><label for="text8">Suspicious
-                                Relay</label><br />
-                            <input type="checkbox" name="text8" value="value8" /><label for="text8">Multi-home Fronted
-                                Tunnel</label><br />
-                        </div>
-                    </div>
-                    <br />
+            <label class="regular" for="cs">Certainty Score</label>
+            <input
+              class="small"
+              type="number"
+              name="cs"
+              id="cs"
+              value="{{CONFIG['certainty_gte']}}"
+            /><br /><br />
+          </div>
+          <h2>Mail Parameters (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="smtp_server">SMPT Server</label>
+            <input
+              type="text"
+              name="smtp_server"
+              id="smtp_server"
+              value="{{CONFIG['mail']['smtp_server']}}"
+            /><br />
 
-                    <label class="regular" for="dcs">Detection Certainty Score</label>
-                    <input class="small" type="text" name="dcs" id="dcs" /><br />
-                </div>
-                <h2>Threat and Certainty Score (optional)</h2>
-                <div class="indent">
-                    <label class="regular" for="ts">Threat Score</label>
-                    <input class="small" type="text" name="ts" id="ts" /><br />
+            <label class="regular" for="port">Port Number</label>
+            <input
+              type="text"
+              name="port"
+              id="port"
+              value="{{CONFIG['mail']['port']}}"
+            /><br />
 
-                    <label class="regular" for="cs">Certainty Score</label>
-                    <input class="small" type="text" name="cs" id="cs" /><br /><br />
-                </div>
-                <h2>Mail Parameters (optional)</h2>
-                <div class="indent">
-                    <label class="regular" for="smtp_server">SMPT Server</label>
-                    <input type="text" name="smtp_server" id="smtp_server" /><br />
+            <label class="regular" for="user">Username</label>
+            <input
+              type="text"
+              name="user"
+              id="user"
+              value="{{CONFIG['mail']['username']}}"
+            /><br />
 
-                    <label class="regular" for="port">Port Number</label>
-                    <input type="text" name="port" id="port" /><br />
+            <label class="regular" for="password">Password</label>
+            <input
+              type="text"
+              name="password"
+              id="password"
+              value="{{CONFIG['mail']['password']}}"
+            /><br />
 
-                    <label class="regular" for="user">Username</label>
-                    <input type="text" name="user" id="user" /><br />
+            <label class="regular" for="mail_from">Sender</label>
+            <input
+              type="text"
+              name="mail_from"
+              id="mail_from"
+              value="{{CONFIG['mail']['sender']}}"
+            /><br />
 
-                    <label class="regular" for="password">Password</label>
-                    <input type="text" name="password" id="password" /><br />
-
-                    <label class="regular" for="mail_from">Sender</label>
-                    <input type="text" name="mail_from" id="mail_from" /><br />
-
-                    <label class="regular" for="mail_to">Recipient</label>
-                    <input type="text" name="mail_to" id="mail_to" /><br /><br />
-
-                </div>
-            </form>
-            <button type="submit" form="form1" value="Submit Configuration">
-                Submit Configuration
-            </button>
-        </div>
+            <label class="regular" for="mail_to">Recipient</label>
+            <input
+              type="text"
+              name="mail_to"
+              id="mail_to"
+              value="{{CONFIG['mail']['recipient']}}"
+            /><br /><br />
+          </div>
+        </form>
+        <button type="submit" form="configuration" value="Submit Configuration">
+          Submit Configuration
+        </button>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
