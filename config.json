@@ -6,8 +6,8 @@
     "bogon": "",
 
     "tags": [],
-    "certainty_gte": "36",
-    "threat_gte": "61",
+    "certainty_gte": 0,
+    "threat_gte": 0,
     "detection_types": [],
 
     "mail": {
