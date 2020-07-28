@@ -105,16 +105,16 @@
             <span>Detection Types</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
-                  {% for det_type in DET_TYPES %}
+                {% for det_type in DET_TYPES %}
                 <input
                   type="checkbox"
-                  name="{{det_type[0]}}",
+                  name="{{det_type[0]}}"
                   value="{{det_type[1]}}"
                   {% if det_type[1] in CONFIG.detection_types %}
-                  , checked
+                  checked
                   {% endif %}
-                  /><label for="{{det_type[0]}}">{{det_type[1]}}</label><br />
-                  {% endfor %}
+                /><label for="{{det_type[0]}}">{{det_type[1]}}</label><br />
+                {% endfor %}
               </div>
             </div>
             <br />
