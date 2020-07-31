@@ -88,6 +88,26 @@
               placeholder="IP address"
               value="{{CONFIG['bogon']}}"
             /><br />
+
+            <label class="regular" for="active">Only Block Active Hosts</label>
+            <input
+              type="checkbox"
+              name="active"
+              value="active_only"
+              {% if CONFIG.active_only %}
+              checked
+              {% endif %}
+            /><br />
+
+            <label class="regular" for="triaged">Only Block Untriaged Detections</label>
+            <input
+              type="checkbox"
+              name="triaged"
+              value="untriaged_only"
+              {% if CONFIG.untriaged_only %}
+              checked
+              {% endif %}
+            /><br />
           </div>
           <h2>Tags (optional)</h2>
           <div class="indent">
