@@ -1,0 +1,21 @@
+{
+    "brain": "https://<Cognito Brain>",
+    "token": "aaaabbbbccccdddd",
+    "active_only": true,
+    "untriaged_only": true,
+    "bogon": "",
+
+    "tags": [],
+    "certainty_gte": 0,
+    "threat_gte": 0,
+    "detection_types": [],
+
+    "mail": {
+        "smtp_server": "",
+        "port": "",
+        "username": "",
+        "password": "",
+        "sender": "",
+        "recipient": ""
+    }
+}
