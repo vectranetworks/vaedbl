@@ -14,10 +14,15 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
-src_database = '.src_db.json'
-tinydb_src = TinyDB(src_database)
-dest_database = '.dest_db.json'
-tinydb_dest = TinyDB(dest_database)
+
+
+def init_dbs():
+    src_database = '.src_db.json'
+    tinydb_src = TinyDB(src_database)
+    dest_database = '.dest_db.json'
+    tinydb_dest = TinyDB(dest_database)
+
+
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 
@@ -90,13 +95,12 @@ def get_dbl_source():
     if update_needed(os.path.abspath(src_database), 5):
         #  If DB last updated longer than 5 minutes
 
-        srcdb = tinydb_src.table('src')
         try:
+            srcdb = tinydb_src.table('src')
             tinydb_src.drop_table('src')
         except json.decoder.JSONDecodeError:
-            os.remove(src_database)
-            src_database = '.src_db.json'
-            tinydb_src = TinyDB(src_database)
+            init_dbs()
+            srcdb = tinydb_src.table('src')
             srcdb = tinydb_src.table('src')
 
         """Retrieve src hosts"""
