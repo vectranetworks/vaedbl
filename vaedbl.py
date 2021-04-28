@@ -95,6 +95,7 @@ def get_dbl_source():
             tinydb_src.drop_table('src')
         except json.decoder.JSONDecodeError:
             os.remove(src_database)
+            src_database = '.src_db.json'
             tinydb_src = TinyDB(src_database)
             srcdb = tinydb_src.table('src')
 
