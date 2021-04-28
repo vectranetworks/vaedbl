@@ -18,7 +18,7 @@ src_database = '.src_db.json'
 tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
-# logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
+logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 
 detection_types = [('external_remote_access', 'External Remote Access'),
@@ -91,7 +91,12 @@ def get_dbl_source():
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
-        tinydb_src.drop_table('src')
+        try:
+            tinydb_src.drop_table('src')
+        except json.decoder.JSONDecodeError:
+            os.remove(src_database)
+            tinydb_src = TinyDB(src_database)
+            srcdb = tinydb_src.table('src')
 
         """Retrieve src hosts"""
 
