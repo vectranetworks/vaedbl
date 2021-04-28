@@ -21,7 +21,6 @@ tinydb_dest = TinyDB(dest_database)
 # logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 
-
 detection_types = [('external_remote_access', 'External Remote Access'),
                    ('hidden_dns_tunnel', 'Hidden DNS Tunnel'),
                    ('hidden_http_tunnel', 'Hidden HTTP Tunnel'),
@@ -92,7 +91,7 @@ def get_dbl_source():
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
-        tinydb_src.purge_table('src')
+        tinydb_src.drop_table('src')
 
         """Retrieve src hosts"""
 
@@ -153,7 +152,7 @@ def get_dbl_dst():
     if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
-        tinydb_dest.purge_table('dest')
+        tinydb_dest.drop_table('dest')
 
         """Retrieve detections"""
 
