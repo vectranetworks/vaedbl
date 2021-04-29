@@ -8,7 +8,7 @@
     "tags": [],
     "certainty_gte": 0,
     "threat_gte": 0,
-    "detection_types": [],
+    "dest_detection_types": [],
 
     "mail": {
         "smtp_server": "",

@@ -142,18 +142,18 @@
           </div>
           <h2>Detection Type (optional)</h2>
           <div class="indent">
-            <span>Detection Types</span>
+            <span>Destination Detection Types</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
-                {% for det_type in DET_TYPES %}
+                {% for dest_det_type in DEST_DET_TYPES %}
                 <input
                   type="checkbox"
                   name="{{det_type[0]}}"
                   value="{{det_type[1]}}"
-                  {% if det_type[1] in CONFIG.detection_types %}
+                  {% if dest_det_type[1] in CONFIG.detection_types %}
                   checked
                   {% endif %}
-                /><label for="{{det_type[0]}}">{{det_type[1]}}</label><br />
+                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
                 {% endfor %}
               </div>
             </div>
