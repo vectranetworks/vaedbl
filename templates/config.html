@@ -148,8 +148,8 @@
                 {% for dest_det_type in DEST_DET_TYPES %}
                 <input
                   type="checkbox"
-                  name="{{det_type[0]}}"
-                  value="{{det_type[1]}}"
+                  name="{{dest_det_type[0]}}"
+                  value="{{dest_det_type[1]}}"
                   {% if dest_det_type[1] in CONFIG.detection_types %}
                   checked
                   {% endif %}
