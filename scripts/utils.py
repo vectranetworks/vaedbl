@@ -6,6 +6,29 @@ from datetime import datetime, timedelta
 import os
 import smtplib
 from email.message import EmailMessage
+from tinydb import TinyDB
+import json
+
+
+def init_db(db_file, table):
+    '''
+    Routine to initialize database file handling a corrupted db by deleting the file and re-initializing.
+
+    :param db_file: database file
+    :param table: table name
+    :return: database table object
+    '''
+
+    db = TinyDB(db_file)
+    dbt = db.table(table)
+    try:
+        db.drop_table(table)
+    except json.decoder.JSONDecodeError:
+        os.remove(db_file)
+        db = TinyDB(db_file)
+        dbt = db.table(table)
+        return dbt
+    return dbt
 
 
 def update_needed(db_name, minutes):

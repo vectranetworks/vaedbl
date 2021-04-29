@@ -6,7 +6,7 @@ import os
 try:
     from tinydb import TinyDB
     from flask import Flask, render_template, request, redirect, url_for
-    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer
+    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer, init_db
 except Exception as error:
     print(f'\nMissing import requirements: {str(error)}\n')
 
@@ -16,9 +16,7 @@ app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
 
 src_database = '.src_db.json'
-tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
-tinydb_dest = TinyDB(dest_database)
 
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
@@ -91,9 +89,7 @@ def submit():
 def get_dbl_source():
     if update_needed(os.path.abspath(src_database), 5):
         #  If DB last updated longer than 5 minutes
-
-        srcdb = tinydb_src.table('src')
-        tinydb_src.drop_table('src')
+        srcdb = init_db(src_database, 'src')
 
         """Retrieve src hosts"""
 
@@ -153,8 +149,7 @@ def get_dbl_dst():
 
     if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
-        destdb = tinydb_dest.table('dest')
-        tinydb_dest.drop_table('dest')
+        destdb = init_db(dest_database, 'dest')
 
         """Retrieve detections"""
 
