@@ -21,7 +21,7 @@ dest_database = '.dest_db.json'
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 
-detection_types = [('external_remote_access', 'External Remote Access'),
+dest_detection_types = [('external_remote_access', 'External Remote Access'),
                    ('hidden_dns_tunnel', 'Hidden DNS Tunnel'),
                    ('hidden_http_tunnel', 'Hidden HTTP Tunnel'),
                    ('hidden_https_tunnel', 'Hidden HTTPS Tunnel'),
@@ -45,7 +45,7 @@ def config():
     config = {}
     with open('config.json') as json_config:
         config = json.load(json_config)
-    return render_template('config.html', CONFIG=config, DET_TYPES=detection_types)
+    return render_template('config.html', CONFIG=config, DET_TYPES=dest_detection_types)
 
 
 @app.route('/submit', methods=['POST'])
@@ -65,11 +65,11 @@ def submit():
     config['tags'] = tags.replace(', ', ',').split(',') if tags else None
     config['certainty_gte'] = int(form_data.get('cs'))
     config['threat_gte'] = int(form_data.get('ts'))
-    config['detection_types'] = []
+    config['dest_detection_types'] = []
 
-    for det_type in detection_types:
+    for det_type in dest_detection_types:
         if form_data.get(det_type[0]):
-            config['detection_types'].append(det_type[1])
+            config['dest_detection_types'].append(det_type[1])
 
     config_mail = config['mail']
     config_mail['smtp_server'] = form_data.get('smtp_server')
@@ -155,7 +155,7 @@ def get_dbl_dst():
 
         with open('config.json') as json_config:
             config_data = json.load(json_config)
-            detection_types = config_data['detection_types']
+            dest_detection_types = config_data['dest_detection_types']
             brain = config_data['brain']
             token = config_data['token']
             active_only = config_data['active_only']
@@ -163,8 +163,8 @@ def get_dbl_dst():
             bogon = config_data['bogon']
             mail = config_data['mail']
 
-        if detection_types:
-            for detection_type in detection_types:
+        if dest_detection_types:
+            for detection_type in dest_detection_types:
                 intel = {
                     'url': brain,
                     'token': token,
