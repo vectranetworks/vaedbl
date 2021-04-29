@@ -24,7 +24,7 @@ def init_db(db_file, table):
     try:
         db.drop_table(table)
     except json.decoder.JSONDecodeError:
-        logging.INFO('{} database corrupted, deleting.'.format(db_file))
+        logging.info('{} database corrupted, deleting.'.format(db_file))
         os.remove(db_file)
         db = TinyDB(db_file)
         dbt = db.table(table)
