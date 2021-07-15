@@ -6,7 +6,7 @@ import os
 try:
     from tinydb import TinyDB
     from flask import Flask, render_template, request, redirect, url_for
-    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer, init_db
+    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer
 except Exception as error:
     print(f'\nMissing import requirements: {str(error)}\n')
 
@@ -14,12 +14,13 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
-
 src_database = '.src_db.json'
+tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
-
+tinydb_dest = TinyDB(dest_database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
+src_detection_types = [('ransomware_file_activity', 'Ransomware File Activity')]
 
 dest_detection_types = [('external_remote_access', 'External Remote Access'),
                    ('hidden_dns_tunnel', 'Hidden DNS Tunnel'),
@@ -45,7 +46,8 @@ def config():
     config = {}
     with open('config.json') as json_config:
         config = json.load(json_config)
-    return render_template('config.html', CONFIG=config, DEST_DET_TYPES=dest_detection_types)
+    
+    return render_template('config.html', CONFIG=config, SRC_DET_TYPES=src_detection_types, DEST_DET_TYPES=dest_detection_types)
 
 
 @app.route('/submit', methods=['POST'])
@@ -63,13 +65,24 @@ def submit():
     config['untriaged_only'] = True if form_data.get('triaged', default=False) else False
     tags = form_data.get('tags')
     config['tags'] = tags.replace(', ', ',').split(',') if tags else None
-    config['certainty_gte'] = int(form_data.get('cs'))
-    config['threat_gte'] = int(form_data.get('ts'))
+    
+    if form_data.get('cs'):
+        config['certainty_gte'] = int(form_data.get('cs'))
+    
+    if form_data.get('ts'):
+        config['threat_gte'] = int(form_data.get('ts'))
+    
     config['dest_detection_types'] = []
+    config['src_detection_types'] = []
 
-    for det_type in dest_detection_types:
-        if form_data.get(det_type[0]):
-            config['dest_detection_types'].append(det_type[1])
+    for dest_det_type in dest_detection_types:
+        if form_data.get(dest_det_type[0]):
+            config['dest_detection_types'].append(dest_det_type[1])
+
+    for src_det_type in src_detection_types:
+        if form_data.get(src_det_type[0]):
+            config['src_detection_types'].append(src_det_type[1])
+
 
     config_mail = config['mail']
     config_mail['smtp_server'] = form_data.get('smtp_server')
@@ -89,7 +102,9 @@ def submit():
 def get_dbl_source():
     if update_needed(os.path.abspath(src_database), 5):
         #  If DB last updated longer than 5 minutes
-        srcdb = init_db(src_database, 'src')
+
+        srcdb = tinydb_src.table('src')
+        tinydb_src.drop_table('src')
 
         """Retrieve src hosts"""
 
@@ -103,8 +118,9 @@ def get_dbl_source():
             active_only = config_data['active_only']
             bogon = config_data['bogon']
             mail = config_data['mail']
+            src_detection_types = config_data['src_detection_types']
 
-        if tags or certainty_gte or threat_gte:
+        if tags or certainty_gte or threat_gte or src_detection_types:
             args = {
                 'url': brain,
                 'token': token,
@@ -119,6 +135,9 @@ def get_dbl_source():
                 args.update({
                     'certainty_gte': certainty_gte,
                     'threat_gte': threat_gte})
+
+            if src_detection_types:
+                args.update({'src_detection_types': src_detection_types})
 
             retrieve_hosts(args, srcdb)
 
@@ -149,7 +168,8 @@ def get_dbl_dst():
 
     if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
-        destdb = init_db(dest_database, 'dest')
+        destdb = tinydb_dest.table('dest')
+        tinydb_dest.drop_table('dest')
 
         """Retrieve detections"""
 
@@ -164,11 +184,11 @@ def get_dbl_dst():
             mail = config_data['mail']
 
         if dest_detection_types:
-            for detection_type in dest_detection_types:
+            for dest_detection_type in dest_detection_types:
                 intel = {
                     'url': brain,
                     'token': token,
-                    'detection_type': detection_type
+                    'detection_type': dest_detection_type
                 }
                 if active_only:
                     intel.update({'state': 'active'})
@@ -178,8 +198,8 @@ def get_dbl_dst():
                 retrieve_detections(intel, destdb)
 
             ip_addrs = []
-            for detection in destdb:
-                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in detection['dst_ips']]
+            for dest_detection in destdb:
+                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in dest_detection['dst_ips']]
             ip_addrs = set(ip_addrs)
 
             fh = open('static/dest.txt', 'w')

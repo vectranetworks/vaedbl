@@ -1,15 +1,18 @@
 {
-    "brain": "https://<Cognito Brain>",
-    "token": "aaaabbbbccccdddd",
+    "brain": "https://10.253.255.10/",
+    "token": "864bbdb36ea69bc66e09c65e71338a78fa74f01e",
     "active_only": true,
     "untriaged_only": true,
     "bogon": "",
-
-    "tags": [],
-    "certainty_gte": 0,
-    "threat_gte": 0,
+    "tags": [
+        "block"
+    ],
+    "certainty_gte": 80,
+    "threat_gte": 80,
+    "src_detection_types": [
+        "Ransomware File Activity"
+    ],
     "dest_detection_types": [],
-
     "mail": {
         "smtp_server": "",
         "port": "",

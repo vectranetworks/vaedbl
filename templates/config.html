@@ -58,7 +58,7 @@
 
   <body>
     <div class="page">
-      <h1 style="color: #f04e23;">Vectra Active Enforcement Configuration</h1>
+      <h1 style="color: #f04e23;">Palo Alto Networks Configuration</h1>
       <div class="indent">
         <form method="post" id="configuration" action="/submit">
           <h2>Required Configuration Parameters</h2>
@@ -109,7 +109,7 @@
               {% endif %}
             /><br />
           </div>
-          <h2>Host Tags (optional)</h2>
+          <h2>Tags (optional)</h2>
           <div class="indent">
             <label class="regular" for="tags">Tags (comma separated)</label>
             <input
@@ -117,10 +117,48 @@
               name="tags"
               id="tags"
               placeholder="Tags in a comma separated list with no spaces"
-              value="{{', '.join(CONFIG['tags'])}}"
+	      {% if CONFIG['tags'] %}
+	      value="{{', '.join(CONFIG['tags'])}}"
+	      {% endif %}
             /><br />
           </div>
-          <h2>Host Threat and Certainty Score (optional)</h2>
+          <h2>Detection Type (optional)</h2>
+          <div class="indent">
+            <span>Source Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for src_det_type in SRC_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{src_det_type[0]}}"
+                  value="{{src_det_type[1]}}"
+                  {% if src_det_type[1] in CONFIG.src_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{src_det_type[0]}}">{{src_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+            </div>
+            <br />
+	    <span>Destination Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for dest_det_type in DEST_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{dest_det_type[0]}}"
+                  value="{{dest_det_type[1]}}"
+                  {% if dest_det_type[1] in CONFIG.dest_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+            </div>
+            <br />
+
+          </div>
+          <h2>Threat and Certainty Score (optional)</h2>
           <div class="indent">
             <label class="regular" for="ts">Threat Score</label>
             <input
@@ -139,25 +177,6 @@
               id="cs"
               value="{{CONFIG['certainty_gte']}}"
             /><br /><br />
-          </div>
-          <h2>Detection Type (optional)</h2>
-          <div class="indent">
-            <span>Destination Detection Types</span>
-            <div class="indent">
-              <div class="checkbox-grid" name="typ">
-                {% for dest_det_type in DEST_DET_TYPES %}
-                <input
-                  type="checkbox"
-                  name="{{dest_det_type[0]}}"
-                  value="{{dest_det_type[1]}}"
-                  {% if dest_det_type[1] in CONFIG.detection_types %}
-                  checked
-                  {% endif %}
-                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
-                {% endfor %}
-              </div>
-            </div>
-            <br />
           </div>
           <h2>Mail Parameters (optional)</h2>
           <div class="indent">
