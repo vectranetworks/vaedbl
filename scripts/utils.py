@@ -118,6 +118,13 @@ def retrieve_detections(args, db):
             for detail in detection['grouped_details']:
                 ips += detail['dns_response'].split(',') if detail['dns_response'] else []
             ips = list(set(ips))
+        elif detection['detection_type'] == 'Suspicious HTTP':
+            ips = []
+            for detail in detection['grouped_details']:
+                ips.extend(detail['dst_ips'])
+        elif detection['detection_type'] == 'Suspicious Relay':
+            ips = detection['summary']['origin_ips']
+            logging.debug(f'returning origin ips:{ips}')
         else:
             ips = detection['summary']['dst_ips']
 

@@ -23,7 +23,6 @@ logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)
 src_detection_types = [('ransomware_file_activity', 'Ransomware File Activity')]
 
 dest_detection_types = [('external_remote_access', 'External Remote Access'),
-                   ('hidden_dns_tunnel', 'Hidden DNS Tunnel'),
                    ('hidden_http_tunnel', 'Hidden HTTP Tunnel'),
                    ('hidden_https_tunnel', 'Hidden HTTPS Tunnel'),
                    ('malware_update', 'Malware Update'),
@@ -32,8 +31,7 @@ dest_detection_types = [('external_remote_access', 'External Remote Access'),
                    ('suspect_domain_activity', 'Suspect Domain Activity'),
                    ('suspicious_http', 'Suspicious HTTP'),
                    ('tor_activity', 'TOR Activity'),
-                   ('suspicious_relay', 'Suspicious Relay'),
-                   ('multi_home_fronted_tunnel', 'Multi-home Fronted Tunnel')]
+                   ('suspicious_relay', 'Suspicious Relay')]
 
 
 @app.route('/')
