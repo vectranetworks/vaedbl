@@ -85,7 +85,8 @@ def retrieve_hosts(args, db):
 
     if args.get('src_detection_types', None):
         for src_det_type in args.get('src_detection_types'):
-            response = vc.advanced_search(stype='hosts', page_size=5000, query=f"host.detection_summaries.detection_type:\"{src_det_type}\"")
+            response = vc.advanced_search(stype='hosts', page_size=5000,
+                                          query=f"host.detection_summaries.detection_type:\"{src_det_type}\"")
        
             for page in response:
                 for host in page.json()['results']:
