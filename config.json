@@ -1,0 +1,20 @@
+{
+    "brain": "https://{brain}/",
+    "token": "{api_token}",
+    "active_only": true,
+    "untriaged_only": true,
+    "bogon": "",
+    "tags": null,
+    "certainty_gte": 90,
+    "threat_gte": 90,
+    "src_detection_types": [],
+    "dest_detection_types": [],
+    "mail": {
+        "smtp_server": "",
+        "port": "",
+        "username": "",
+        "password": "",
+        "sender": "",
+        "recipient": ""
+    }
+}

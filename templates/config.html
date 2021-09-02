@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <style>
+      label.regular {
+        display: inline-block;
+        text-align: left;
+        width: 200px;
+      }
+
+      input[type="text"] {
+        width: 275px;
+        margin-bottom: 3px;
+      }
+
+      body {
+        margin-left: 1em;
+      }
+
+      button {
+        background-color: #f04e23;
+        color: white;
+        border-radius: 3px;
+        margin-top: 10px;
+        width: 160px;
+        height: 35px;
+      }
+
+      select {
+        margin-bottom: 3px;
+      }
+
+      div.indent {
+        margin-left: 1em;
+      }
+
+      input.small {
+        width: 50px;
+      }
+
+      div.checkbox-grid {
+        width: 570px;
+        column-count: 3;
+      }
+
+      span {
+        display: inline-block;
+        text-align: left;
+        width: 200px;
+        margin-bottom: 10px;
+      }
+
+      /* input[type="checkbox"] {
+            width: ;
+        } */
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <h1 style="color: #f04e23;">Vectra Active Enforcement</h1>
+      <div class="indent">
+        <form method="post" id="configuration" action="/submit">
+          <h2>Required Configuration Parameters</h2>
+          <div class="indent">
+            <label class="regular" for="appliance">Vectra Appliance URL</label>
+            <input
+              type="text"
+              name="appliance"
+              id="appliance"
+              placeholder="Hostname or IP address"
+              value="{{CONFIG['brain']}}"
+            /><br />
+
+            <label class="regular" for="token">API Token</label>
+            <input
+              type="text"
+              name="token"
+              id="token"
+              placeholder="Cognito API Token"
+            /><br />
+
+            <label class="regular" for="bogon">Bogon</label>
+            <input
+              type="text"
+              name="bogon"
+              id="bogon"
+              placeholder="IP address"
+              value="{{CONFIG['bogon']}}"
+            /><br />
+
+            <label class="regular" for="active">Only Block Active Hosts</label>
+            <input
+              type="checkbox"
+              name="active"
+              value="active_only"
+              {% if CONFIG.active_only %}
+              checked
+              {% endif %}
+            /><br />
+
+            <label class="regular" for="triaged">Only Block Untriaged Detections</label>
+            <input
+              type="checkbox"
+              name="triaged"
+              value="untriaged_only"
+              {% if CONFIG.untriaged_only %}
+              checked
+              {% endif %}
+            /><br />
+          </div>
+          <h2>Tags (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="tags">Tags (comma separated)</label>
+            <input
+              type="text"
+              name="tags"
+              id="tags"
+              placeholder="Tags in a comma separated list with no spaces"
+	      {% if CONFIG['tags'] %}
+	      value="{{', '.join(CONFIG['tags'])}}"
+	      {% endif %}
+            /><br />
+          </div>
+          <h2>Detection Type (optional)</h2>
+          <div class="indent">
+            <span>Source Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for src_det_type in SRC_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{src_det_type[0]}}"
+                  value="{{src_det_type[1]}}"
+                  {% if src_det_type[1] in CONFIG.src_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{src_det_type[0]}}">{{src_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+            </div>
+            <br />
+	    <span>Destination Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for dest_det_type in DEST_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{dest_det_type[0]}}"
+                  value="{{dest_det_type[1]}}"
+                  {% if dest_det_type[1] in CONFIG.dest_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+            </div>
+            <br />
+
+          </div>
+          <h2>Threat and Certainty Score (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="ts">Threat Score</label>
+            <input
+              class="small"
+              type="number"
+              name="ts"
+              id="ts"
+              value="{{CONFIG['threat_gte']}}"
+            /><br />
+
+            <label class="regular" for="cs">Certainty Score</label>
+            <input
+              class="small"
+              type="number"
+              name="cs"
+              id="cs"
+              value="{{CONFIG['certainty_gte']}}"
+            /><br /><br />
+          </div>
+          <h2>Mail Parameters (optional)</h2>
+          <div class="indent">
+            <label class="regular" for="smtp_server">SMPT Server</label>
+            <input
+              type="text"
+              name="smtp_server"
+              id="smtp_server"
+              value="{{CONFIG['mail']['smtp_server']}}"
+            /><br />
+
+            <label class="regular" for="port">Port Number</label>
+            <input
+              type="text"
+              name="port"
+              id="port"
+              value="{{CONFIG['mail']['port']}}"
+            /><br />
+
+            <label class="regular" for="user">Username</label>
+            <input
+              type="text"
+              name="user"
+              id="user"
+              value="{{CONFIG['mail']['username']}}"
+            /><br />
+
+            <label class="regular" for="password">Password</label>
+            <input
+              type="text"
+              name="password"
+              id="password"
+              value="{{CONFIG['mail']['password']}}"
+            /><br />
+
+            <label class="regular" for="mail_from">Sender</label>
+            <input
+              type="text"
+              name="mail_from"
+              id="mail_from"
+              value="{{CONFIG['mail']['sender']}}"
+            /><br />
+
+            <label class="regular" for="mail_to">Recipient</label>
+            <input
+              type="text"
+              name="mail_to"
+              id="mail_to"
+              value="{{CONFIG['mail']['recipient']}}"
+            /><br /><br />
+          </div>
+        </form>
+        <button type="submit" form="configuration" value="Submit Configuration">
+          Submit Configuration
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

@@ -2,11 +2,10 @@
 Description=Vectra Active Enforcement
 
 [Service]
-User=<user>
-WorkingDirectory=<path>
-Environment=FLASK_APP=vaedbl.py
-ExecStart=/usr/local/bin/flask run --host=0.0.0.0 --port=8080
-Restart=on-failure
+User=dmurphy
+WorkingDirectory=/home/dmurphy/vaedbl
+Environment=FLASK_APP=/home/dmurphy/vaedbl/vaedbl.py
+ExecStart=/home/dmurphy/.local/bin/flask run --host=0.0.0.0 --port=8080
 RestartSec=15s
 
 [Install]
