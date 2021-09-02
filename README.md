@@ -18,13 +18,13 @@ The following software and python3 packages are required.
 * python3-pip (apt)
 * libxml2-dev (apt)
 * libxslt-dev (apt)  
-  ###Example: *sudo apt install python3 python-pip libxml2-dev libxslt-dev*
+### Example: *sudo apt install python3 python-pip libxml2-dev libxslt-dev*
 * flask (pip)
 * lxml (pip)
 * requests (pip)
 * tinydb (pip)
 * vectra\_api\_tools (pip)  
-  ###Example: *sudo pip3 install -r requirements.txt*
+### Example: *sudo pip3 install -r requirements.txt*
 
 ### Setup
 Setup can be performed manually by following the steps below, or by running the setup
