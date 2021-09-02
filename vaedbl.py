@@ -105,7 +105,6 @@ def get_dbl_source():
         srcdb = tinydb_src.table('src')
         tinydb_src.drop_table('src')
 
-
         """Retrieve src hosts"""
 
         with open('config.json') as json_config:
