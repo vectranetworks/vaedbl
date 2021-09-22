@@ -156,9 +156,30 @@
               </div>
             </div>
             <br />
-
           </div>
-          <h2>Threat and Certainty Score (optional)</h2>
+
+          <h2>External Destination Blocks for C2 Detections</h2>
+          <div class="indent">
+            <label class="regular" for="c2ts">Threat Score</label>
+            <input
+              class="small"
+              type="number"
+              name="c2ts"
+              id="c2ts"
+              value="{{CONFIG['c2_threat_gte']}}"
+            /><br />
+
+            <label class="regular" for="c2cs">Certainty Score</label>
+            <input
+              class="small"
+              type="number"
+              name="c2cs"
+              id="c2cs"
+              value="{{CONFIG['c2_certainty_gte']}}"
+            /><br /><br />
+          </div>
+
+	  <h2>Threat and Certainty Score (optional)</h2>
           <div class="indent">
             <label class="regular" for="ts">Threat Score</label>
             <input

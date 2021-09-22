@@ -77,7 +77,7 @@ def retrieve_hosts(args, db):
         hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50)).json()
         logging.debug('{count} hosts returned with score: certainty {certainty} threat {threat}'.format(
             count=hosts['count'], certainty=args.get('certainty_gte', 50), threat=args.get('threat_gte', 50)))
-
+        
         for host in hosts['results']:
             logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
             db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
@@ -130,3 +130,22 @@ def retrieve_detections(args, db):
         logging.debug(f'det_id:{detection["id"]}, dst_ips:{ips}')
         db.insert({'id': detection['id'], 'dst_ips': ips})
         logging.debug(f'{str(ips)} added to block list')
+
+
+def retrieve_c2hosts(args, db):
+    vc = vectra.VectraClient(url=args['url'], token=args['token'])
+
+    if bool(args.get('state', None)) or bool(args.get('triaged', None)):
+        detections = vc.get_detections(detection_category='command & control', state=args['state'],
+                                      is_triaged=args['triaged']).json()
+    elif args.get('triaged', None):
+        detections = vc.get_detections(detection_category='command & control', is_triaged=args['triaged'],
+                                      tags=args.get('tags', None)).json()
+    else:
+        detections = vc.get_detections(detection_category='command & control').json()
+
+    for detection in detections['results']:
+        ips = []
+        if detection['src_host']['threat'] >= args['c2_threat_score'] and detection['src_host']['certainty'] >= args['c2_certainty_score']:
+            ips = detection['summary']['dst_ips']
+        db.insert({'id':detection['id'], 'dst_ips':ips})

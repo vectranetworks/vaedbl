@@ -6,7 +6,7 @@ import os
 try:
     from tinydb import TinyDB
     from flask import Flask, render_template, request, redirect, url_for
-    from scripts.utils import retrieve_hosts, retrieve_detections, update_needed, mailer
+    from scripts.utils import init_db, retrieve_hosts, retrieve_detections, update_needed, mailer, retrieve_c2hosts
 except Exception as error:
     print(f'\nMissing import requirements: {str(error)}\n')
 
@@ -18,6 +18,8 @@ src_database = '.src_db.json'
 tinydb_src = TinyDB(src_database)
 dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
+tc_dest_database='.tcdest_db.json'
+tinydb_tc_dest=TinyDB(tc_dest_database)
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
 src_detection_types = [('ransomware_file_activity', 'Ransomware File Activity')]
@@ -69,7 +71,13 @@ def submit():
     
     if form_data.get('ts'):
         config['threat_gte'] = int(form_data.get('ts'))
-    
+   
+    if form_data.get('c2cs'):
+        config['c2_certainty_gte'] = int(form_data.get('c2cs'))
+
+    if form_data.get('c2ts'):
+        config['c2_threat_gte'] = int(form_data.get('c2ts'))
+
     config['dest_detection_types'] = []
     config['src_detection_types'] = []
 
@@ -217,6 +225,63 @@ def get_dbl_dst():
             fh.close()
 
     return app.send_static_file('dest.txt')
+
+
+@app.route('/dbl/tc_dest')
+def get_dbl_tc_dst(): 
+    if update_needed(os.path.abspath(tc_dest_database), .01):
+        #  If DB last updated longer than 5 minutes
+        tcdestdb = init_db(tc_dest_database, 'tcdest')
+        tinydb_tc_dest.drop_table('tcdest')
+   
+        """Retrieve detections"""
+
+        with open('config.json') as json_config:
+            config_data = json.load(json_config)
+            brain = config_data['brain']
+            token = config_data['token']
+            active_only = config_data['active_only']
+            untriaged_only = config_data['untriaged_only']
+            bogon = config_data['bogon']
+            mail = config_data['mail']
+            tscore = config_data['c2_threat_gte']
+            cscore = config_data['c2_certainty_gte']
+
+        if tscore or cscore:
+            intel = {
+                'url': brain,
+                'token': token,
+                'c2_threat_score':tscore,
+                'c2_certainty_score':cscore
+            }
+            if active_only:
+                intel.update({'state': 'active'})
+            if untriaged_only:
+                intel.update({'triaged': 'false'})
+
+            retrieve_c2hosts(intel, tcdestdb)
+
+            ip_addrs = []
+            for tcdest in tcdestdb:
+                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in tcdest['dst_ips']]
+
+            ip_addrs = set(ip_addrs)
+
+            fh = open('static/tc_dest.txt', 'w')
+            if ip_addrs:
+                fh.writelines(ip_addrs)
+                fh.close()
+                if mail['smtp_server']:
+                    mailer(mail, os.path.abspath('static/tc_dest.txt'), 'destination')
+            else:
+                fh.writelines(bogon)
+                fh.close()
+        else:
+            fh = open('static/tc_dest.txt', 'w')
+            fh.writelines(bogon)
+            fh.close()
+
+    return app.send_static_file('tc_dest.txt')
 
 
 if __name__ == '__main__':
