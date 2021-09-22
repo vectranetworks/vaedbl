@@ -230,6 +230,7 @@ def get_dbl_dst():
 
 @app.route('/dbl/tc_dest')
 def get_dbl_tc_dst(): 
+    
     if update_needed(os.path.abspath(tc_dest_database), .01):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')

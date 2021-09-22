@@ -150,3 +150,4 @@ def retrieve_c2hosts(args, db):
         if detection['src_host']['threat'] >= args['c2_threat_score'] and detection['src_host']['certainty'] >= args['c2_certainty_score']:
             ips = detection['summary']['dst_ips']
         db.insert({'id':detection['id'], 'dst_ips':ips})
+

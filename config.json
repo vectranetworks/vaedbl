@@ -7,8 +7,8 @@
     "tags": null,
     "c2_certainty_gte": 80,
     "c2_threat_gte": 80,
-    "certainty_gte": 100,
-    "threat_gte": 100,
+    "certainty_gte": 90,
+    "threat_gte": 90,
     "src_detection_types": [],
     "dest_detection_types": [],
     "mail": {
