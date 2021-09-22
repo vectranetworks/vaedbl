@@ -47,7 +47,8 @@ def config():
     with open('config.json') as json_config:
         config = json.load(json_config)
     
-    return render_template('config.html', CONFIG=config, SRC_DET_TYPES=src_detection_types, DEST_DET_TYPES=dest_detection_types)
+    return render_template('config.html', CONFIG=config, SRC_DET_TYPES=src_detection_types,
+                           DEST_DET_TYPES=dest_detection_types)
 
 
 @app.route('/submit', methods=['POST'])
