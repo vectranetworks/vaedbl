@@ -1,16 +1,30 @@
 {
     "brain": "https://demo.vectra.io/",
-    "token": "593134a261b2a905baaccb5dbba5429d7956945b",
-    "active_only": true,
-    "untriaged_only": true,
+    "token": "c42e151814da919ace882caf5fa9ccb024dac592",
+    "active_only": false,
+    "untriaged_only": false,
     "bogon": "",
     "tags": null,
-    "c2_certainty_gte": 80,
-    "c2_threat_gte": 80,
-    "certainty_gte": 90,
-    "threat_gte": 90,
-    "src_detection_types": [],
-    "dest_detection_types": [],
+    "src_wl": [
+        "Cognito - Domain Controllers",
+        "Web Developers"
+    ],
+    "dst_wl": [
+        "Cognito - Office365"
+    ],
+    "c2_certainty_gte": 40,
+    "c2_threat_gte": 20,
+    "certainty_gte": 45,
+    "threat_gte": 45,
+    "src_detection_types": [
+        "Ransomware File Activity"
+    ],
+    "dest_detection_types": [
+        "Hidden HTTPS Tunnel",
+        "Suspect Domain Activity",
+        "Suspicious HTTP",
+        "Suspicious Relay"
+    ],
     "mail": {
         "smtp_server": "",
         "port": "",

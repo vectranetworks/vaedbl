@@ -9,7 +9,7 @@
       }
 
       input[type="text"] {
-        width: 275px;
+        width: 300px;
         margin-bottom: 3px;
       }
 
@@ -46,7 +46,7 @@
       span {
         display: inline-block;
         text-align: left;
-        width: 200px;
+        width: 300px;
         margin-bottom: 10px;
       }
 
@@ -138,7 +138,19 @@
                 /><label for="{{src_det_type[0]}}">{{src_det_type[1]}}</label><br />
                 {% endfor %}
               </div>
-            </div>
+	    </div>
+	    <br />
+	    <span><i>Whitelist Source IP Groups (optional)</i></span>
+	    <div class="indent">
+	      <input type="text"
+		     name="src_wl"
+		     id="src_wl"
+		     placeholder="Groups in a comma separated list with no spaces"
+		     {% if CONFIG['src_wl'] %}
+	      	     value="{{', '.join(CONFIG['src_wl'])}}"
+	      	     {% endif %}
+	      />
+	    </div>
             <br />
 	    <span>Destination Detection Types</span>
             <div class="indent">
@@ -156,6 +168,17 @@
               </div>
             </div>
             <br />
+	    <span><i>Whitelist Destination IP Groups (optional)</i></span>
+	    <div class="indent">
+	      <input type="text"
+	      	     name="dst_wl"
+		     id="dst_wl"
+		     placeholder="Groups in a comma separated list with no spaces"
+		     {% if CONFIG['dst_wl'] %}
+	      	     value="{{', '.join(CONFIG['dst_wl'])}}"
+	      	     {% endif %}
+	      />
+	    </div>
           </div>
 
           <h2>External Destination Blocks for C2 Detections</h2>

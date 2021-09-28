@@ -8,7 +8,7 @@ import smtplib
 from email.message import EmailMessage
 from tinydb import TinyDB
 import json
-
+import ipaddress
 
 def init_db(db_file, table):
     '''
@@ -61,8 +61,37 @@ def mailer(mail_args, block_list, subject):
         s.quit()
 
 
+def ip_in_whitelist(ip, whitelist):
+    ip_addr = ipaddress.ip_address(ip)
+    for subnet in whitelist:
+        network = ipaddress.ip_network(subnet)
+        if ip_addr in network or ip_addr == subnet:
+            return True
+    return False
+
+
+def get_whitelist(vc, args, whitelist_name):
+    wl = []
+    if args.get(whitelist_name, None):
+        for groupname in args[whitelist_name]:
+            group_details = vc.get_groups_by_name(name=groupname)
+            for g in group_details:
+                for ip in g['members']:
+                    wl.append(str(ip))
+    return wl
+
+
+#def ip_not_in_whitelist(host, wl):
+#    addIp = True
+#    for group in host['groups']:
+#        if group['name'] in wl:
+#            appIp = False
+#            break
+#    return addIp
+
 def retrieve_hosts(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
+    wl = args.get('src_wl', [])
 
     if args.get('tags', None):
         hosts = vc.get_hosts(tags=args['tags'], state=args['state']).json()
@@ -70,18 +99,30 @@ def retrieve_hosts(args, db):
 
         for host in hosts['results']:
             logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-            db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
-            logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
+            addIp = True
+            for group in host['groups']:
+                if group['name'] in wl:
+                    addIp = False
+                    break
+            if addIp:
+                db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
+                logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
     if args.get('certainty_gte', None) or args.get('threat_gte', None):
         hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50)).json()
         logging.debug('{count} hosts returned with score: certainty {certainty} threat {threat}'.format(
             count=hosts['count'], certainty=args.get('certainty_gte', 50), threat=args.get('threat_gte', 50)))
-        
+       
         for host in hosts['results']:
             logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-            db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
-            logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
+            addIp = True
+            for group in host['groups']:
+                if group['name'] in wl:
+                    addIp = False
+                    break
+            if addIp:
+                db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
+                logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
     if args.get('src_detection_types', None):
         for src_det_type in args.get('src_detection_types'):
@@ -91,12 +132,20 @@ def retrieve_hosts(args, db):
             for page in response:
                 for host in page.json()['results']:
                     logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-                    db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
-                    logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
+                    addIp = True
+                    for group in host['groups']:
+                        if group['name'] in wl:
+                            addIp = False
+                            break
+                    if addIp:
+                        db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
+                        logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
 
 def retrieve_detections(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
+    #wl = get_whitelist(vc, args, 'dst_wl')
+    wl = args.get('dst_wl', [])
 
     if bool(args.get('state', None)) and bool(args.get('triaged', None)):
         detections = vc.get_detections(detection_type=args.get('detection_type', None), state=args['state'],
@@ -117,17 +166,45 @@ def retrieve_detections(args, db):
         if detection['detection_type'] == 'Suspect Domain Activity':
             ips = []
             for detail in detection['grouped_details']:
-                ips += detail['dns_response'].split(',') if detail['dns_response'] else []
+                addIp = True
+                for group in detection['groups']:
+                    if group['name'] in wl:
+                        addIp = False
+                        break
+                if addIp:
+                    ips += detail['dns_response'].split(',') if detail['dns_response'] else []
             ips = list(set(ips))
         elif detection['detection_type'] == 'Suspicious HTTP':
             ips = []
             for detail in detection['grouped_details']:
-                ips.extend(detail['dst_ips'])
+                addIp = True
+                for group in detection['groups']:
+                    if group['name'] in wl:
+                        addIp = False
+                        break
+                if addIp:
+                    ips.extend(detail['dst_ips'])
         elif detection['detection_type'] == 'Suspicious Relay':
-            ips = detection['summary']['origin_ips']
+            addIp = True
+            for group in detection['groups']:
+                if group['name'] in wl:
+                    addIp = False
+                    break
+            if addIp:
+                ips = detection['summary']['origin_ips']
         else:
-            ips = detection['summary']['dst_ips']
+            addIp = True
+            for group in detection['groups']:
+                if group['name'] in wl:
+                    addIp = False
+                    break
+            if addIp:
+                ips = detection['summary']['dst_ips']
 
+        #for ip in ips:
+        #    if ip_in_whitelist(ip, wl):
+        #        ips.remove(ip)
+        
         logging.debug(f'det_id:{detection["id"]}, dst_ips:{ips}')
         db.insert({'id': detection['id'], 'dst_ips': ips})
         logging.debug(f'{str(ips)} added to block list')
@@ -147,7 +224,20 @@ def retrieve_c2hosts(args, db):
 
     for detection in detections['results']:
         ips = []
-        if detection['src_host']['threat'] >= args['c2_threat_score'] and detection['src_host']['certainty'] >= args['c2_certainty_score']:
-            ips = detection['summary']['dst_ips']
-        db.insert({'id':detection['id'], 'dst_ips':ips})
+        if (detection['src_host']['threat'] >= args['c2_threat_score']
+            and detection['src_host']['certainty'] >= args['c2_certainty_score']):
+            
+            if detection['detection_type'] == 'Suspect Domain Activity':
+                for detail in detection['grouped_details']:
+                    ips += detail['dns_response'].split(',') if detail['dns_response'] else []
+                ips = list(set(ips))
+            #CONFIRM BELOW IS CORRECT FOR HIDDEN DNS TUNNEL
+            elif detection['detection_type'] == 'Suspicious HTTP' or detection['detection_type'] == 'Hidden DNS Tunnel':
+                for detail in detection['grouped_details']:
+                    ips.extend(detail['dst_ips'])
+            elif detection['detection_type'] == 'Suspicious Relay':
+                ips = detection['summary']['origin_ips']
+            else:
+                ips = detection['summary']['dst_ips']
 
+        db.insert({'id':detection['id'], 'dst_ips':ips})

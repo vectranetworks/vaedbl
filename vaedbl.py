@@ -66,7 +66,11 @@ def submit():
     config['untriaged_only'] = True if form_data.get('triaged', default=False) else False
     tags = form_data.get('tags')
     config['tags'] = tags.replace(', ', ',').split(',') if tags else None
-    
+    src_wl = form_data.get('src_wl')
+    config['src_wl'] = src_wl.replace(', ', ',').split(',') if src_wl else None
+    dst_wl = form_data.get('dst_wl')
+    config['dst_wl'] = dst_wl.replace(', ', ',').split(',') if dst_wl else None
+
     if form_data.get('cs'):
         config['certainty_gte'] = int(form_data.get('cs'))
     
@@ -90,7 +94,6 @@ def submit():
         if form_data.get(src_det_type[0]):
             config['src_detection_types'].append(src_det_type[1])
 
-
     config_mail = config['mail']
     config_mail['smtp_server'] = form_data.get('smtp_server')
     config_mail['port'] = form_data.get('port')
@@ -107,7 +110,7 @@ def submit():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    if update_needed(os.path.abspath(src_database), 5):
+    if update_needed(os.path.abspath(src_database), .01):
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
@@ -118,6 +121,7 @@ def get_dbl_source():
         with open('config.json') as json_config:
             config_data = json.load(json_config)
             tags = config_data['tags']
+            src_wl = config_data['src_wl']
             certainty_gte = config_data['certainty_gte']
             threat_gte = config_data['threat_gte']
             brain = config_data['brain']
@@ -137,6 +141,9 @@ def get_dbl_source():
 
             if tags:
                 args.update({'tags': tags})
+
+            if src_wl:
+                args.update({'src_wl':src_wl})
             
             if certainty_gte or threat_gte:
                 args.update({
@@ -173,7 +180,7 @@ def get_dbl_source():
 @app.route('/dbl/dest')
 def get_dbl_dst():
 
-    if update_needed(os.path.abspath(dest_database), 5):
+    if update_needed(os.path.abspath(dest_database), .01):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
         tinydb_dest.drop_table('dest')
@@ -189,6 +196,7 @@ def get_dbl_dst():
             untriaged_only = config_data['untriaged_only']
             bogon = config_data['bogon']
             mail = config_data['mail']
+            dst_wl = config_data['dst_wl']
 
         if dest_detection_types:
             for dest_detection_type in dest_detection_types:
@@ -201,6 +209,8 @@ def get_dbl_dst():
                     intel.update({'state': 'active'})
                 if untriaged_only:
                     intel.update({'triaged': 'false'})
+                if dst_wl:
+                    intel.update({'dst_wl':dst_wl})
 
                 retrieve_detections(intel, destdb)
 
