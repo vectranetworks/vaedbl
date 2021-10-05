@@ -122,9 +122,9 @@
 	      {% endif %}
             /><br />
           </div>
-          <h2>Detection Type (optional)</h2>
+          <h2>Detection Type</h2>
           <div class="indent">
-            <span>Source Detection Types</span>
+            <span>Source Detection Types (optional)</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
                 {% for src_det_type in SRC_DET_TYPES %}
@@ -140,18 +140,6 @@
               </div>
 	    </div>
 	    <br />
-	    <span><i>Whitelist Source IP Groups (optional)</i></span>
-	    <div class="indent">
-	      <input type="text"
-		     name="src_wl"
-		     id="src_wl"
-		     placeholder="Groups in a comma separated list with no spaces"
-		     {% if CONFIG['src_wl'] %}
-	      	     value="{{', '.join(CONFIG['src_wl'])}}"
-	      	     {% endif %}
-	      />
-	    </div>
-            <br />
 	    <span>Destination Detection Types</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
@@ -168,20 +156,9 @@
               </div>
             </div>
             <br />
-	    <span><i>Whitelist Destination IP Groups (optional)</i></span>
-	    <div class="indent">
-	      <input type="text"
-	      	     name="dst_wl"
-		     id="dst_wl"
-		     placeholder="Groups in a comma separated list with no spaces"
-		     {% if CONFIG['dst_wl'] %}
-	      	     value="{{', '.join(CONFIG['dst_wl'])}}"
-	      	     {% endif %}
-	      />
-	    </div>
           </div>
 
-          <h2>External Destination Blocks for C2 Detections</h2>
+          <h2>Host Score for C2 External Destination Blocks (optional)</h2>
           <div class="indent">
             <label class="regular" for="c2ts">Threat Score</label>
             <input
@@ -202,7 +179,7 @@
             /><br /><br />
           </div>
 
-	  <h2>Threat and Certainty Score (optional)</h2>
+	  <h2>Host Score for Source Host Blocks (optional)</h2>
           <div class="indent">
             <label class="regular" for="ts">Threat Score</label>
             <input
@@ -222,7 +199,35 @@
               value="{{CONFIG['certainty_gte']}}"
             /><br /><br />
           </div>
-          <h2>Mail Parameters (optional)</h2>
+          
+	  <h2>Whitelists (optional)</h2>
+	  <div class="indent">
+	    <label class="regular" for"src_wl">Whitelist Source IP Groups</label>
+	    <input type="text"
+	      	   name="src_wl"
+		   id="src_wl"
+		   placeholder="Groups in a comma separated list with no spaces"
+		   {% if CONFIG['src_wl'] %}
+	      	   value="{{', '.join(CONFIG['src_wl'])}}"
+	      	   {% endif %}
+	    />
+	  </div>
+	  <br />	
+	  <div class="indent">
+	    <label class="regular" for="dst_wl">Whitelist Destination IP Groups</label>
+	    <input type="text"
+		   name="dst_wl"
+		   id="dst_wl"
+		   placeholder="Groups in a comma separated list with no spaces"
+		   {% if CONFIG['dst_wl'] %}
+	      	   value="{{', '.join(CONFIG['dst_wl'])}}"
+	      	   {% endif %}
+	    />
+	  </div>
+          <br />
+          </div>
+        
+	  <h2>Mail Parameters (optional)</h2>
           <div class="indent">
             <label class="regular" for="smtp_server">SMPT Server</label>
             <input

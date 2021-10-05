@@ -61,33 +61,45 @@ def mailer(mail_args, block_list, subject):
         s.quit()
 
 
-def ip_in_whitelist(ip, whitelist):
+def in_ip_wl(ip, whitelist):
     ip_addr = ipaddress.ip_address(ip)
     for subnet in whitelist:
-        network = ipaddress.ip_network(subnet)
-        if ip_addr in network or ip_addr == subnet:
+        network = ipaddress.ip_network(subnet, False)
+        if ip_addr in network or ip == subnet:
             return True
     return False
 
 
-def get_whitelist(vc, args, whitelist_name):
-    wl = []
-    if args.get(whitelist_name, None):
-        for groupname in args[whitelist_name]:
+def in_group_wl(host, wl):
+    for group in host['groups']:
+        if group['name'] in wl:
+            return True
+    return False
+
+
+def remove_wl_ips(detection, wl, vc, ips):
+    gnames = []
+    for group in detection['groups']:
+        gnames.append(group['name'])
+
+    intersect = list(set(wl) & set(gnames))
+    if intersect:
+        ips_not_in_wl = []
+        #converts whitelist of groupnames to list of IPs 
+        ip_wl = []
+        for groupname in intersect:
             group_details = vc.get_groups_by_name(name=groupname)
             for g in group_details:
                 for ip in g['members']:
-                    wl.append(str(ip))
-    return wl
+                    ip_wl.append(str(ip))
 
+        for ip in ips:
+            if not in_ip_wl(ip, ip_wl):
+                ips_not_in_wl.append(ip)
+        ips = ips_not_in_wl
+ 
+    return ips
 
-#def ip_not_in_whitelist(host, wl):
-#    addIp = True
-#    for group in host['groups']:
-#        if group['name'] in wl:
-#            appIp = False
-#            break
-#    return addIp
 
 def retrieve_hosts(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
@@ -99,12 +111,7 @@ def retrieve_hosts(args, db):
 
         for host in hosts['results']:
             logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-            addIp = True
-            for group in host['groups']:
-                if group['name'] in wl:
-                    addIp = False
-                    break
-            if addIp:
+            if not in_group_wl(host, wl):
                 db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
                 logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
@@ -115,12 +122,7 @@ def retrieve_hosts(args, db):
        
         for host in hosts['results']:
             logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-            addIp = True
-            for group in host['groups']:
-                if group['name'] in wl:
-                    addIp = False
-                    break
-            if addIp:
+            if not in_group_wl(host, wl):
                 db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
                 logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
@@ -132,79 +134,45 @@ def retrieve_hosts(args, db):
             for page in response:
                 for host in page.json()['results']:
                     logging.debug('host_id:{}, name:{}, ip:{}'.format(host['id'], host['name'], host['last_source']))
-                    addIp = True
-                    for group in host['groups']:
-                        if group['name'] in wl:
-                            addIp = False
-                            break
-                    if addIp:
+                    if not in_group_wl(host, wl):
                         db.insert({'id': host['id'], 'name': host['name'], 'ip': host['last_source']})
                         logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
 
 def retrieve_detections(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
-    #wl = get_whitelist(vc, args, 'dst_wl')
     wl = args.get('dst_wl', [])
 
     if bool(args.get('state', None)) and bool(args.get('triaged', None)):
         detections = vc.get_detections(detection_type=args.get('detection_type', None), state=args['state'],
-                                       is_triaged=args['triaged'], tags=args.get('tags', None)).json()
+                                       is_triaged=args['triaged']).json()
 
     elif args.get('triaged', None):
-        detections = vc.get_detections(detection_type=args.get('detection_type', None), is_triaged=args['triaged'],
-                                       tags=args.get('tags', None)).json()
+        detections = vc.get_detections(detection_type=args.get('detection_type', None), is_triaged=args['triaged']).json()
 
     else:
-        detections = vc.get_detections(detection_type=args.get('detection_type', None),
-                                       tags=args.get('tags', None)).json()
+        detections = vc.get_detections(detection_type=args.get('detection_type', None)).json()
 
     logging.debug('{count} detections were returned with detection {detection}'.format(
         count=detections['count'], detection=args.get('detection_type', None)))
 
     for detection in detections['results']:
+        ips = []
         if detection['detection_type'] == 'Suspect Domain Activity':
-            ips = []
             for detail in detection['grouped_details']:
-                addIp = True
-                for group in detection['groups']:
-                    if group['name'] in wl:
-                        addIp = False
-                        break
-                if addIp:
-                    ips += detail['dns_response'].split(',') if detail['dns_response'] else []
+                ips += detail['dns_response'].split(',') if detail['dns_response'] else []
             ips = list(set(ips))
         elif detection['detection_type'] == 'Suspicious HTTP':
-            ips = []
             for detail in detection['grouped_details']:
-                addIp = True
-                for group in detection['groups']:
-                    if group['name'] in wl:
-                        addIp = False
-                        break
-                if addIp:
-                    ips.extend(detail['dst_ips'])
+                ips.extend(detail['dst_ips'])
         elif detection['detection_type'] == 'Suspicious Relay':
-            addIp = True
-            for group in detection['groups']:
-                if group['name'] in wl:
-                    addIp = False
-                    break
-            if addIp:
-                ips = detection['summary']['origin_ips']
+            ips = detection['summary']['origin_ips']
         else:
-            addIp = True
-            for group in detection['groups']:
-                if group['name'] in wl:
-                    addIp = False
-                    break
-            if addIp:
-                ips = detection['summary']['dst_ips']
+            ips = detection['summary']['dst_ips']
 
-        #for ip in ips:
-        #    if ip_in_whitelist(ip, wl):
-        #        ips.remove(ip)
-        
+        if detection['groups'] and wl:
+            ips = remove_wl_ips(detection, wl, vc, ips)
+
         logging.debug(f'det_id:{detection["id"]}, dst_ips:{ips}')
         db.insert({'id': detection['id'], 'dst_ips': ips})
         logging.debug(f'{str(ips)} added to block list')
@@ -212,32 +180,41 @@ def retrieve_detections(args, db):
 
 def retrieve_c2hosts(args, db):
     vc = vectra.VectraClient(url=args['url'], token=args['token'])
+    wl = args.get('dst_wl', [])
 
-    if bool(args.get('state', None)) or bool(args.get('triaged', None)):
+    if bool(args.get('state', None)) and bool(args.get('triaged', None)):
         detections = vc.get_detections(detection_category='command & control', state=args['state'],
                                       is_triaged=args['triaged']).json()
     elif args.get('triaged', None):
-        detections = vc.get_detections(detection_category='command & control', is_triaged=args['triaged'],
-                                      tags=args.get('tags', None)).json()
+        detections = vc.get_detections(detection_category='command & control', is_triaged=args['triaged']).json()
     else:
         detections = vc.get_detections(detection_category='command & control').json()
 
     for detection in detections['results']:
         ips = []
         if (detection['src_host']['threat'] >= args['c2_threat_score']
-            and detection['src_host']['certainty'] >= args['c2_certainty_score']):
+            and detection['src_host']['certainty'] >= args['c2_certainty_score']): 
             
             if detection['detection_type'] == 'Suspect Domain Activity':
                 for detail in detection['grouped_details']:
                     ips += detail['dns_response'].split(',') if detail['dns_response'] else []
                 ips = list(set(ips))
-            #CONFIRM BELOW IS CORRECT FOR HIDDEN DNS TUNNEL
-            elif detection['detection_type'] == 'Suspicious HTTP' or detection['detection_type'] == 'Hidden DNS Tunnel':
+            elif detection['detection_type'] == 'Suspicious HTTP':# or detection['detection_type'] == 'Hidden DNS Tunnel':
                 for detail in detection['grouped_details']:
                     ips.extend(detail['dst_ips'])
+            #elif detection['detection_type'] == 'Multi-home Fronted Tunnel':
+            #    for detail in detection['grouped_details']:
+            #        ips.extend(detail['cdn_ips'])
             elif detection['detection_type'] == 'Suspicious Relay':
                 ips = detection['summary']['origin_ips']
+            elif (detection['detection_type'] == 'Vectra Threat Intelligence Match' or
+                    detection['detection_type'] == 'Hidden DNS Tunnel' or
+                    detection['detection_type'] == 'Multi-home Fronted Tunnel'):
+                pass
             else:
                 ips = detection['summary']['dst_ips']
 
+        if detection['groups'] and wl:
+            ips = remove_wl_ips(detection, wl, vc, ips)
+       
         db.insert({'id':detection['id'], 'dst_ips':ips})

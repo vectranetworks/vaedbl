@@ -78,10 +78,10 @@ def submit():
         config['threat_gte'] = int(form_data.get('ts'))
    
     if form_data.get('c2cs'):
-        config['c2_certainty_gte'] = int(form_data.get('c2cs'))
+        config['c2_certainty_gte'] = int(form_data.get('c2cs')) if form_data.get('c2cs', default=50) else 50
 
     if form_data.get('c2ts'):
-        config['c2_threat_gte'] = int(form_data.get('c2ts'))
+        config['c2_threat_gte'] = int(form_data.get('c2ts')) if form_data.get('c2ts', default=50) else 50
 
     config['dest_detection_types'] = []
     config['src_detection_types'] = []
@@ -110,7 +110,7 @@ def submit():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    if update_needed(os.path.abspath(src_database), .01):
+    if update_needed(os.path.abspath(src_database), 5):
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
@@ -131,7 +131,7 @@ def get_dbl_source():
             mail = config_data['mail']
             src_detection_types = config_data['src_detection_types']
 
-        if tags or certainty_gte or threat_gte or src_detection_types:
+        if tags or src_wl or certainty_gte or threat_gte or src_detection_types:
             args = {
                 'url': brain,
                 'token': token,
@@ -180,7 +180,7 @@ def get_dbl_source():
 @app.route('/dbl/dest')
 def get_dbl_dst():
 
-    if update_needed(os.path.abspath(dest_database), .01):
+    if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
         tinydb_dest.drop_table('dest')
@@ -209,6 +209,7 @@ def get_dbl_dst():
                     intel.update({'state': 'active'})
                 if untriaged_only:
                     intel.update({'triaged': 'false'})
+                
                 if dst_wl:
                     intel.update({'dst_wl':dst_wl})
 
@@ -241,7 +242,7 @@ def get_dbl_dst():
 @app.route('/dbl/tc_dest')
 def get_dbl_tc_dst(): 
     
-    if update_needed(os.path.abspath(tc_dest_database), .01):
+    if update_needed(os.path.abspath(tc_dest_database), 5):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')
         tinydb_tc_dest.drop_table('tcdest')
@@ -258,38 +259,36 @@ def get_dbl_tc_dst():
             mail = config_data['mail']
             tscore = config_data['c2_threat_gte']
             cscore = config_data['c2_certainty_gte']
+            dst_wl = config_data['dst_wl']
 
-        if tscore or cscore:
-            intel = {
-                'url': brain,
-                'token': token,
-                'c2_threat_score':tscore,
-                'c2_certainty_score':cscore
-            }
-            if active_only:
-                intel.update({'state': 'active'})
-            if untriaged_only:
-                intel.update({'triaged': 'false'})
+        intel = {
+            'url': brain,
+            'token': token,
+            'c2_threat_score':tscore,
+            'c2_certainty_score':cscore
+        }
+        if active_only:
+            intel.update({'state': 'active'})
+        if untriaged_only:
+            intel.update({'triaged': 'false'})
+        if dst_wl:
+            intel.update({'dst_wl':dst_wl})
 
-            retrieve_c2hosts(intel, tcdestdb)
+        retrieve_c2hosts(intel, tcdestdb)
 
-            ip_addrs = []
-            for tcdest in tcdestdb:
-                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in tcdest['dst_ips']]
+        ip_addrs = []
+        for tcdest in tcdestdb:
+            ip_addrs += ['{ip}\n'.format(ip=ip) for ip in tcdest['dst_ips']]
 
-            ip_addrs = set(ip_addrs)
+        ip_addrs = set(ip_addrs)
 
-            fh = open('static/tc_dest.txt', 'w')
-            if ip_addrs:
-                fh.writelines(ip_addrs)
-                fh.close()
-                if mail['smtp_server']:
-                    mailer(mail, os.path.abspath('static/tc_dest.txt'), 'destination')
-            else:
-                fh.writelines(bogon)
-                fh.close()
+        fh = open('static/tc_dest.txt', 'w')
+        if ip_addrs:
+            fh.writelines(ip_addrs)
+            fh.close()
+            if mail['smtp_server']:
+                mailer(mail, os.path.abspath('static/tc_dest.txt'), 'destination')
         else:
-            fh = open('static/tc_dest.txt', 'w')
             fh.writelines(bogon)
             fh.close()
 
