@@ -28,7 +28,7 @@ The following software and python3 packages are required.
 
 ### Setup
 Setup can be performed manually by following the steps below, or by running the setup
-script **configure.py**.
+script ```**configure.py**```.
 
 #### Manual setup
 1. Edit conf/systemd.service
