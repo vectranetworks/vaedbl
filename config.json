@@ -5,6 +5,11 @@
     "untriaged_only": true,
     "bogon": "",
     "tags": null,
+    "src_wl": null,
+    "dst_wl": [
+    ],
+    "c2_certainty_gte": 90,
+    "c2_threat_gte": 90,
     "certainty_gte": 90,
     "threat_gte": 90,
     "src_detection_types": [],

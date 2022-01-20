@@ -6,15 +6,17 @@
         display: inline-block;
         text-align: left;
         width: 200px;
+        font-family: arial;
       }
 
       input[type="text"] {
-        width: 275px;
+        width: 300px;
         margin-bottom: 3px;
       }
 
       body {
         margin-left: 1em;
+        font-family: arial;
       }
 
       button {
@@ -24,6 +26,7 @@
         margin-top: 10px;
         width: 160px;
         height: 35px;
+        font-family: arial;
       }
 
       select {
@@ -46,8 +49,9 @@
       span {
         display: inline-block;
         text-align: left;
-        width: 200px;
+        width: 300px;
         margin-bottom: 10px;
+        font-family: arial;
       }
 
       /* input[type="checkbox"] {
@@ -80,7 +84,7 @@
               placeholder="Cognito API Token"
             /><br />
 
-            <label class="regular" for="bogon">Bogon</label>
+            <label class="regular" for="bogon">Bogon IP</label>
             <input
               type="text"
               name="bogon"
@@ -89,7 +93,7 @@
               value="{{CONFIG['bogon']}}"
             /><br />
 
-            <label class="regular" for="active">Only Block Active Hosts</label>
+            <label class="regular" for="active">Only Block Active Host Source IPs</label>
             <input
               type="checkbox"
               name="active"
@@ -99,7 +103,7 @@
               {% endif %}
             /><br />
 
-            <label class="regular" for="triaged">Only Block Untriaged Detections</label>
+            <label class="regular" for="triaged">Only Block Untriaged Detections Destination IPs</label>
             <input
               type="checkbox"
               name="triaged"
@@ -109,9 +113,10 @@
               {% endif %}
             /><br />
           </div>
-          <h2>Tags (optional)</h2>
+          <h2>Block Source Hosts' IPs with Host Tags (optional)</h2>
           <div class="indent">
-            <label class="regular" for="tags">Tags (comma separated)</label>
+              Blocklist URI: <code>/dbl/src</code><br /><br />
+            <label class="regular" for="tags">Tags (comma separated, no space)</label>
             <input
               type="text"
               name="tags"
@@ -122,44 +127,9 @@
 	      {% endif %}
             /><br />
           </div>
-          <h2>Detection Type (optional)</h2>
+            <h2>Block Source Host IP Based on Threat/Certainty Thresholds (optional)</h2>
           <div class="indent">
-            <span>Source Detection Types</span>
-            <div class="indent">
-              <div class="checkbox-grid" name="typ">
-                {% for src_det_type in SRC_DET_TYPES %}
-                <input
-                  type="checkbox"
-                  name="{{src_det_type[0]}}"
-                  value="{{src_det_type[1]}}"
-                  {% if src_det_type[1] in CONFIG.src_detection_types %}
-                  checked
-                  {% endif %}
-                /><label for="{{src_det_type[0]}}">{{src_det_type[1]}}</label><br />
-                {% endfor %}
-              </div>
-            </div>
-            <br />
-	    <span>Destination Detection Types</span>
-            <div class="indent">
-              <div class="checkbox-grid" name="typ">
-                {% for dest_det_type in DEST_DET_TYPES %}
-                <input
-                  type="checkbox"
-                  name="{{dest_det_type[0]}}"
-                  value="{{dest_det_type[1]}}"
-                  {% if dest_det_type[1] in CONFIG.dest_detection_types %}
-                  checked
-                  {% endif %}
-                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
-                {% endfor %}
-              </div>
-            </div>
-            <br />
-
-          </div>
-          <h2>Threat and Certainty Score (optional)</h2>
-          <div class="indent">
+              Blocklist URI: <code>/dbl/src</code><br /><br />
             <label class="regular" for="ts">Threat Score</label>
             <input
               class="small"
@@ -178,7 +148,95 @@
               value="{{CONFIG['certainty_gte']}}"
             /><br /><br />
           </div>
-          <h2>Mail Parameters (optional)</h2>
+          <h2>Block Host Source IPs Based on Detection Type</h2>
+            Blocklist URI: <code>/dbl/src_det</code><br /><br />
+          <div class="indent">
+            <span>Source Detection Types (optional)</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for src_det_type in SRC_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{src_det_type[0]}}"
+                  value="{{src_det_type[1]}}"
+                  {% if src_det_type[1] in CONFIG.src_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{src_det_type[0]}}">{{src_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+	    </div>
+	    <br />
+              <h2>Block Detection Destination IPs Based on Detection Type (optional)</h2>
+              Blocklist URI: <code>/dbl/dest</code><br /><br />
+	    <span>Destination Detection Types</span>
+            <div class="indent">
+              <div class="checkbox-grid" name="typ">
+                {% for dest_det_type in DEST_DET_TYPES %}
+                <input
+                  type="checkbox"
+                  name="{{dest_det_type[0]}}"
+                  value="{{dest_det_type[1]}}"
+                  {% if dest_det_type[1] in CONFIG.dest_detection_types %}
+                  checked
+                  {% endif %}
+                /><label for="{{dest_det_type[0]}}">{{dest_det_type[1]}}</label><br />
+                {% endfor %}
+              </div>
+            </div>
+            <br />
+          </div>
+
+          <h2>Block C2 Detection Destination IP for Hosts by Threat/Certainty Thresholds (optional)</h2>
+          <div class="indent">
+              Blocklist URI: <code>/dbl/tc_dest</code><br /><br />
+            <label class="regular" for="c2ts">Threat Score</label>
+            <input
+              class="small"
+              type="number"
+              name="c2ts"
+              id="c2ts"
+              value="{{CONFIG['c2_threat_gte']}}"
+            /><br />
+
+            <label class="regular" for="c2cs">Certainty Score</label>
+            <input
+              class="small"
+              type="number"
+              name="c2cs"
+              id="c2cs"
+              value="{{CONFIG['c2_certainty_gte']}}"
+            /><br /><br />
+          </div>
+          
+	  <h2>Whitelists (optional)</h2>
+	  <div class="indent">
+	    <label class="regular" for"src_wl">Whitelist Source IP Groups</label>
+	    <input type="text"
+	      	   name="src_wl"
+		   id="src_wl"
+		   placeholder="Groups in a comma separated list with no spaces"
+		   {% if CONFIG['src_wl'] %}
+	      	   value="{{', '.join(CONFIG['src_wl'])}}"
+	      	   {% endif %}
+	    />
+	  </div>
+	  <br />	
+	  <div class="indent">
+	    <label class="regular" for="dst_wl">Whitelist Destination IP Groups</label>
+	    <input type="text"
+		   name="dst_wl"
+		   id="dst_wl"
+		   placeholder="Groups in a comma separated list with no spaces"
+		   {% if CONFIG['dst_wl'] %}
+	      	   value="{{', '.join(CONFIG['dst_wl'])}}"
+	      	   {% endif %}
+	    />
+	  </div>
+          <br />
+          </div>
+        
+	  <h2>Mail Parameters (optional)</h2>
           <div class="indent">
             <label class="regular" for="smtp_server">SMPT Server</label>
             <input
