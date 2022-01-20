@@ -64,6 +64,7 @@ Manual configuration of the configuration is also possible:
 1. Edit config.py
     - set brain url
     - set token
+    - set bogon IP *(eliminates possible firewall error due to empty list)*
     - set mail parameters (if desired)
     - configure source host query (tags, scores)
     - configure destination host query (detections)  
