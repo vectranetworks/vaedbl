@@ -110,7 +110,11 @@ def submit():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    if update_needed(os.path.abspath(src_database), 5):
+    '''
+    Returns source host IPs to be blocked based on tags, and host threat and certainty
+    :return:
+    '''
+    if update_needed(os.path.abspath(src_database), 1):
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
@@ -179,8 +183,11 @@ def get_dbl_source():
 
 @app.route('/dbl/dest')
 def get_dbl_dst():
-
-    if update_needed(os.path.abspath(dest_database), 5):
+    '''
+    Returns destination IPs from specified detections types.
+    :return:
+    '''
+    if update_needed(os.path.abspath(dest_database), 1):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
         tinydb_dest.drop_table('dest')
@@ -241,8 +248,11 @@ def get_dbl_dst():
 
 @app.route('/dbl/tc_dest')
 def get_dbl_tc_dst(): 
-    
-    if update_needed(os.path.abspath(tc_dest_database), 5):
+    '''
+    Returns destination IPs for hosts with C2 detections based on host T/C scoring thresholds
+    :return:
+    '''
+    if update_needed(os.path.abspath(tc_dest_database), 1):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')
         tinydb_tc_dest.drop_table('tcdest')

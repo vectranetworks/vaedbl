@@ -106,7 +106,7 @@ def retrieve_hosts(args, db):
     wl = args.get('src_wl', [])
 
     if args.get('tags', None):
-        hosts = vc.get_hosts(tags=args['tags'], state=args['state']).json()
+        hosts = vc.get_hosts(tags=args['tags'], state=args['state'], page_size=1000).json()
         logging.debug(f'{hosts["count"]} hosts returned with tags: {args["tags"]}')
 
         for host in hosts['results']:
@@ -116,7 +116,8 @@ def retrieve_hosts(args, db):
                 logging.debug('host ' + host['name'] + ':' + host['last_source'] + ' added to block list')
 
     if args.get('certainty_gte', None) or args.get('threat_gte', None):
-        hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50)).json()
+        hosts = vc.get_hosts(certainty_gte=args.get('certainty_gte', 50), threat_gte=args.get('threat_gte', 50),
+                             page_size=1000).json()
         logging.debug('{count} hosts returned with score: certainty {certainty} threat {threat}'.format(
             count=hosts['count'], certainty=args.get('certainty_gte', 50), threat=args.get('threat_gte', 50)))
        
@@ -145,13 +146,14 @@ def retrieve_detections(args, db):
 
     if bool(args.get('state', None)) and bool(args.get('triaged', None)):
         detections = vc.get_detections(detection_type=args.get('detection_type', None), state=args['state'],
-                                       is_triaged=args['triaged']).json()
+                                       is_triaged=args['triaged'], page_size=1000).json()
 
     elif args.get('triaged', None):
-        detections = vc.get_detections(detection_type=args.get('detection_type', None), is_triaged=args['triaged']).json()
+        detections = vc.get_detections(detection_type=args.get('detection_type', None),
+                                       is_triaged=args['triaged'], page_size=1000).json()
 
     else:
-        detections = vc.get_detections(detection_type=args.get('detection_type', None)).json()
+        detections = vc.get_detections(detection_type=args.get('detection_type', None), page_size=1000).json()
 
     logging.debug('{count} detections were returned with detection {detection}'.format(
         count=detections['count'], detection=args.get('detection_type', None)))
@@ -184,16 +186,16 @@ def retrieve_c2hosts(args, db):
 
     if bool(args.get('state', None)) and bool(args.get('triaged', None)):
         detections = vc.get_detections(detection_category='command & control', state=args['state'],
-                                      is_triaged=args['triaged']).json()
+                                      is_triaged=args['triaged'], page_size=1000).json()
     elif args.get('triaged', None):
-        detections = vc.get_detections(detection_category='command & control', is_triaged=args['triaged']).json()
+        detections = vc.get_detections(detection_category='command & control', is_triaged=args['triaged'], page_size=1000).json()
     else:
-        detections = vc.get_detections(detection_category='command & control').json()
+        detections = vc.get_detections(detection_category='command & control', page_size=1000).json()
 
     for detection in detections['results']:
         ips = []
         if (detection['src_host']['threat'] >= args['c2_threat_score']
-            and detection['src_host']['certainty'] >= args['c2_certainty_score']): 
+                and detection['src_host']['certainty'] >= args['c2_certainty_score']):
             
             if detection['detection_type'] == 'Suspect Domain Activity':
                 for detail in detection['grouped_details']:
