@@ -71,7 +71,7 @@ def submit():
     form_data = request.form
 
     config['brain'] = form_data.get('appliance')
-    config['token'] = form_data.get('token')
+    config['token'] = form_data.get('token') if len(form_data.get('token')) > 0 else config['token']
     config['bogon'] = form_data.get('bogon')
     config['active_only'] = True if form_data.get('active', default=False) else False
     config['untriaged_only'] = True if form_data.get('triaged', default=False) else False
