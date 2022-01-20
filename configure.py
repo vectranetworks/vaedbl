@@ -5,10 +5,11 @@ flask_command = os.popen('which flask')
 flask_output = flask_command.read().split('\n')[0]
 flask_command.close()
 
-if len(flask_command == 0):
+if len(flask_output) == 0:
     print("No flask app found in path.  Please ensure requirements have been met.\n Exiting")
     exit(0)
 else:
+    print('Flask probably found, continuing')
     #  write to supervisor.conf file
     with open('conf/supervisor.conf', 'r') as file:
         supervisor_data = file.readlines()
@@ -42,4 +43,4 @@ else:
     os.system('sudo chown '+user+':'+user+' /var/log/vae.log')
     os.system('sudo systemctl enable vae.service')
     os.system('sudo systemctl daemon-reload')
-    os.system('sudo systemctl restart vae.service')
+    os.system('sudo systemctl start vae.service')
