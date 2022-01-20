@@ -80,7 +80,7 @@
               placeholder="Cognito API Token"
             /><br />
 
-            <label class="regular" for="bogon">Bogon</label>
+            <label class="regular" for="bogon">Bogon IP</label>
             <input
               type="text"
               name="bogon"
@@ -89,7 +89,7 @@
               value="{{CONFIG['bogon']}}"
             /><br />
 
-            <label class="regular" for="active">Only Block Active Hosts</label>
+            <label class="regular" for="active">Only Block Active Host Source IPs</label>
             <input
               type="checkbox"
               name="active"
@@ -99,7 +99,7 @@
               {% endif %}
             /><br />
 
-            <label class="regular" for="triaged">Only Block Untriaged Detections</label>
+            <label class="regular" for="triaged">Only Block Untriaged Detections Destination IPs</label>
             <input
               type="checkbox"
               name="triaged"
@@ -109,9 +109,10 @@
               {% endif %}
             /><br />
           </div>
-          <h2>Tags (optional)</h2>
+          <h2>Block Source Hosts' IPs with Host Tags (optional)</h2>
           <div class="indent">
-            <label class="regular" for="tags">Tags (comma separated)</label>
+              Blocklist URI: <code>/dbl/src</code><br /><br />
+            <label class="regular" for="tags">Tags (comma separated, no space)</label>
             <input
               type="text"
               name="tags"
@@ -122,7 +123,29 @@
 	      {% endif %}
             /><br />
           </div>
-          <h2>Detection Type</h2>
+            <h2>Block Source Host IP Based on Threat/Certainty Thresholds (optional)</h2>
+          <div class="indent">
+              Blocklist URI: <code>/dbl/src</code><br /><br />
+            <label class="regular" for="ts">Threat Score</label>
+            <input
+              class="small"
+              type="number"
+              name="ts"
+              id="ts"
+              value="{{CONFIG['threat_gte']}}"
+            /><br />
+
+            <label class="regular" for="cs">Certainty Score</label>
+            <input
+              class="small"
+              type="number"
+              name="cs"
+              id="cs"
+              value="{{CONFIG['certainty_gte']}}"
+            /><br /><br />
+          </div>
+          <h2>Block Host Source IPs Based on Detection Type</h2>
+            Blocklist URI: <code>/dbl/src_det</code><br /><br />
           <div class="indent">
             <span>Source Detection Types (optional)</span>
             <div class="indent">
@@ -140,6 +163,8 @@
               </div>
 	    </div>
 	    <br />
+              <h2>Block Detection Destination IPs Based on Detection Type (optional)</h2>
+              Blocklist URI: <code>/dbl/dest</code><br /><br />
 	    <span>Destination Detection Types</span>
             <div class="indent">
               <div class="checkbox-grid" name="typ">
@@ -158,8 +183,9 @@
             <br />
           </div>
 
-          <h2>Host Score for C2 External Destination Blocks (optional)</h2>
+          <h2>Block C2 Detection Destination IP for Hosts by Threat/Certainty Thresholds (optional)</h2>
           <div class="indent">
+              Blocklist URI: <code>/dbl/tc_dest</code><br /><br />
             <label class="regular" for="c2ts">Threat Score</label>
             <input
               class="small"
@@ -176,27 +202,6 @@
               name="c2cs"
               id="c2cs"
               value="{{CONFIG['c2_certainty_gte']}}"
-            /><br /><br />
-          </div>
-
-	  <h2>Host Score for Source Host Blocks (optional)</h2>
-          <div class="indent">
-            <label class="regular" for="ts">Threat Score</label>
-            <input
-              class="small"
-              type="number"
-              name="ts"
-              id="ts"
-              value="{{CONFIG['threat_gte']}}"
-            /><br />
-
-            <label class="regular" for="cs">Certainty Score</label>
-            <input
-              class="small"
-              type="number"
-              name="cs"
-              id="cs"
-              value="{{CONFIG['certainty_gte']}}"
             /><br /><br />
           </div>
           

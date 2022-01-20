@@ -85,7 +85,7 @@ def remove_wl_ips(detection, wl, vc, ips):
     intersect = list(set(wl) & set(gnames))
     if intersect:
         ips_not_in_wl = []
-        #converts whitelist of groupnames to list of IPs 
+        # converts whitelist of groupnames to list of IPs
         ip_wl = []
         for groupname in intersect:
             group_details = vc.get_groups_by_name(name=groupname)

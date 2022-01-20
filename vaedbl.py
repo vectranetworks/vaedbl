@@ -14,26 +14,37 @@ requests.packages.urllib3.disable_warnings()
 
 app = Flask(__name__)
 app.config['send_file_max_age_default'] = 60
+
 src_database = '.src_db.json'
 tinydb_src = TinyDB(src_database)
+
 dest_database = '.dest_db.json'
 tinydb_dest = TinyDB(dest_database)
-tc_dest_database='.tcdest_db.json'
-tinydb_tc_dest=TinyDB(tc_dest_database)
+
+tc_dest_database = '.tcdest_db.json'
+tinydb_tc_dest = TinyDB(tc_dest_database)
+
+src_det_database = '.srcdet_db.json'
+tinydb_src_det = TinyDB(src_det_database)
+
 logging.basicConfig(filename='/var/log/vae.log', format='%(asctime)s: %(message)s', level=logging.INFO)
 
-src_detection_types = [('ransomware_file_activity', 'Ransomware File Activity')]
+src_detection_types = [
+    ('ransomware_file_activity', 'Ransomware File Activity')
+]
 
-dest_detection_types = [('external_remote_access', 'External Remote Access'),
-                   ('hidden_http_tunnel', 'Hidden HTTP Tunnel'),
-                   ('hidden_https_tunnel', 'Hidden HTTPS Tunnel'),
-                   ('malware_update', 'Malware Update'),
-                   ('peer_to_peer', 'Peer-To-Peer'),
-                   ('stealth_http_post', 'Stealth HTTP Post'),
-                   ('suspect_domain_activity', 'Suspect Domain Activity'),
-                   ('suspicious_http', 'Suspicious HTTP'),
-                   ('tor_activity', 'TOR Activity'),
-                   ('suspicious_relay', 'Suspicious Relay')]
+dest_detection_types = [
+    ('external_remote_access', 'External Remote Access'),
+    ('hidden_http_tunnel', 'Hidden HTTP Tunnel'),
+    ('hidden_https_tunnel', 'Hidden HTTPS Tunnel'),
+    ('malware_update', 'Malware Update'),
+    ('peer_to_peer', 'Peer-To-Peer'),
+    ('stealth_http_post', 'Stealth HTTP Post'),
+    ('suspect_domain_activity', 'Suspect Domain Activity'),
+    ('suspicious_http', 'Suspicious HTTP'),
+    ('tor_activity', 'TOR Activity'),
+    ('suspicious_relay', 'Suspicious Relay')
+]
 
 
 @app.route('/')
@@ -110,10 +121,10 @@ def submit():
 
 @app.route('/dbl/src')
 def get_dbl_source():
-    '''
-    Returns source host IPs to be blocked based on tags, and host threat and certainty
-    :return:
-    '''
+    """
+    Returns source host IPs based on tags, and host threat and certainty
+    :return: src.txt
+    """
     if update_needed(os.path.abspath(src_database), 1):
         #  If DB last updated longer than 5 minutes
 
@@ -133,9 +144,8 @@ def get_dbl_source():
             active_only = config_data['active_only']
             bogon = config_data['bogon']
             mail = config_data['mail']
-            src_detection_types = config_data['src_detection_types']
 
-        if tags or src_wl or certainty_gte or threat_gte or src_detection_types:
+        if tags or src_wl or certainty_gte or threat_gte:
             args = {
                 'url': brain,
                 'token': token,
@@ -153,9 +163,6 @@ def get_dbl_source():
                 args.update({
                     'certainty_gte': certainty_gte,
                     'threat_gte': threat_gte})
-
-            if src_detection_types:
-                args.update({'src_detection_types': src_detection_types})
 
             retrieve_hosts(args, srcdb)
 
@@ -181,12 +188,74 @@ def get_dbl_source():
     return app.send_static_file('src.txt')
 
 
+@app.route('/dbl/src_det')
+def get_dbl_source_det():
+    """
+    Returns source host IPs based detection type
+    :return: src_det.txt
+    """
+    if update_needed(os.path.abspath(src_det_database), 1):
+        #  If DB last updated longer than 5 minutes
+
+        srcdetdb = tinydb_src.table('src_det')
+        tinydb_src_det.drop_table('src_det')
+
+        """Retrieve src hosts with specific detection(s)"""
+
+        with open('config.json') as json_config:
+            config_data = json.load(json_config)
+            src_wl = config_data['src_wl']
+            brain = config_data['brain']
+            token = config_data['token']
+            active_only = config_data['active_only']
+            bogon = config_data['bogon']
+            mail = config_data['mail']
+            src_detection_types = config_data['src_detection_types']
+
+        if src_detection_types:
+            args = {
+                'url': brain,
+                'token': token,
+            }
+            if active_only:
+                args.update({'state': 'active'})
+
+            if src_wl:
+                args.update({'src_wl': src_wl})
+
+            if src_detection_types:
+                args.update({'src_detection_types': src_detection_types})
+
+            retrieve_hosts(args, srcdetdb)
+
+            ip_addrs = []
+            ip_addrs += ['{ip}\n'.format(ip=host['ip']) for host in srcdetdb]
+            ip_addrs = set(ip_addrs)
+
+            fh = open('static/src_det.txt', 'w')
+
+            if ip_addrs:
+                fh.writelines(ip_addrs)
+                fh.close()
+                if mail['smtp_server']:
+                    mailer(mail, os.path.abspath('static/src_det.txt'), 'source')
+            else:
+                fh.writelines(bogon)
+                fh.close()
+        else:
+            fh = open('static/src_det.txt', 'w')
+            fh.writelines(bogon)
+            fh.close()
+
+    return app.send_static_file('src_det.txt')
+
+
 @app.route('/dbl/dest')
 def get_dbl_dst():
-    '''
+    """
     Returns destination IPs from specified detections types.
-    :return:
-    '''
+    :return: static/dest.txt
+    """
     if update_needed(os.path.abspath(dest_database), 1):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
@@ -247,11 +316,11 @@ def get_dbl_dst():
 
 
 @app.route('/dbl/tc_dest')
-def get_dbl_tc_dst(): 
-    '''
+def get_dbl_tc_dst():
+    """
     Returns destination IPs for hosts with C2 detections based on host T/C scoring thresholds
-    :return:
-    '''
+    :return: tc_dest.txt
+    """
     if update_needed(os.path.abspath(tc_dest_database), 1):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')
