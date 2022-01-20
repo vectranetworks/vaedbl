@@ -1,4 +1,4 @@
-#Vectra Active Enforcement Dynamic Blocklist
+# Vectra Active Enforcement Dynamic Blocklist
 ## Overview
 VAE supplies a list of source or destination IPs via a webserver that can be consumed 
 by firewalls and similar technology to enforce a policy when a threat has been detected 
@@ -19,7 +19,7 @@ The following software and python3 packages are required.
 * python3-pip
 * libxml2-dev
 * libxslt-dev  
-  ####Example: ```sudo apt install python3 python3-pip libxml2-dev libxslt-dev```
+  #### Example: ```sudo apt install python3 python3-pip libxml2-dev libxslt-dev```
   
 ### Python modules
 * flask
@@ -27,7 +27,7 @@ The following software and python3 packages are required.
 * requests
 * tinydb
 * vectra\_api\_tools  
-  ####Example: ```sudo -H pip3 install -r requirements.txt```  
+  #### Example: ```sudo -H pip3 install -r requirements.txt```  
   
 ### Setup
 Setup can be performed manually by following the steps below, or by running the setup
@@ -53,9 +53,10 @@ Once configuration has been successfully run, start VAE:
 
 ### Configuration
 Once setup is complete a configuration page is available at ```http://<host>:8080/config```
-by default.  The brain's URL, API token are required.  The API token once entered will be 
+by default.  
+The brain's URL, API token are required.  The API token once entered will be 
 retained and won't need to be added every time a change is made even though it is not 
-displays.  Additional parameters configure
+displayed.  Additional parameters configure
 which IPs are supplied in the source and destination blocklists.  
 
 **Alternate method**  
