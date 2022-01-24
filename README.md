@@ -15,6 +15,7 @@ in Cognito Detect.
 
 ### System Requirements
 The following software and python3 packages are required.
+
 * python3
 * python3-pip
 * libxml2-dev
@@ -29,9 +30,10 @@ The following software and python3 packages are required.
 * vectra\_api\_tools  
   #### Example: ```sudo -H pip3 install -r requirements.txt```  
   
+  
 ### Setup
 Setup can be performed manually by following the steps below, or by running the setup
-script **configure.py**.  
+script ```configure.py```.
 
 Once configuration has been successfully run, start VAE:
     ```
