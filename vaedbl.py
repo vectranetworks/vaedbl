@@ -125,7 +125,7 @@ def get_dbl_source():
     Returns source host IPs based on tags, and host threat and certainty
     :return: src.txt
     """
-    if update_needed(os.path.abspath(src_database), 1):
+    if update_needed(os.path.abspath(src_database), 5):
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
@@ -194,7 +194,7 @@ def get_dbl_source_det():
     Returns source host IPs based detection type
     :return: src_det.txt
     """
-    if update_needed(os.path.abspath(src_det_database), 1):
+    if update_needed(os.path.abspath(src_det_database), 5):
         #  If DB last updated longer than 5 minutes
 
         srcdetdb = tinydb_src.table('src_det')
@@ -256,7 +256,7 @@ def get_dbl_dst():
     Returns destination IPs from specified detections types.
     :return: static/dest.txt
     """
-    if update_needed(os.path.abspath(dest_database), 1):
+    if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
         tinydb_dest.drop_table('dest')
@@ -321,7 +321,7 @@ def get_dbl_tc_dst():
     Returns destination IPs for hosts with C2 detections based on host T/C scoring thresholds
     :return: tc_dest.txt
     """
-    if update_needed(os.path.abspath(tc_dest_database), 1):
+    if update_needed(os.path.abspath(tc_dest_database), 5):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')
         tinydb_tc_dest.drop_table('tcdest')
