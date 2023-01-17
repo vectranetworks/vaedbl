@@ -6,7 +6,7 @@ import os
 try:
     from tinydb import TinyDB
     from flask import Flask, render_template, request, redirect, url_for
-    from scripts.utils import init_db, retrieve_hosts, retrieve_detections, update_needed, mailer, retrieve_c2hosts
+    from scripts.utils import init_db, recreate_db, retrieve_hosts, retrieve_detections, update_needed, mailer, retrieve_c2hosts
 except Exception as error:
     print(f'\nMissing import requirements: {str(error)}\n')
 
@@ -129,7 +129,11 @@ def get_dbl_source():
         #  If DB last updated longer than 5 minutes
 
         srcdb = tinydb_src.table('src')
-        tinydb_src.drop_table('src')
+        try:
+            tinydb_src.drop_table('src')
+        except json.decoder.JSONDecodeError:
+            logging.info('{} database corrupted, recreating.'.format(src_database))
+            recreate_db(src_database)
 
         """Retrieve src hosts"""
 
@@ -157,7 +161,7 @@ def get_dbl_source():
                 args.update({'tags': tags})
 
             if src_wl:
-                args.update({'src_wl':src_wl})
+                args.update({'src_wl': src_wl})
             
             if certainty_gte or threat_gte:
                 args.update({
@@ -167,8 +171,12 @@ def get_dbl_source():
             retrieve_hosts(args, srcdb)
 
             ip_addrs = []
-            ip_addrs += ['{ip}\n'.format(ip=host['ip']) for host in srcdb]
-            ip_addrs = set(ip_addrs)
+            try:
+                ip_addrs += ['{ip}\n'.format(ip=host['ip']) for host in srcdb]
+                ip_addrs = set(ip_addrs)
+            except json.decoder.JSONDecodeError:
+                logging.info('{} database corrupted, recreating.'.format(src_database))
+                recreate_db(src_database)
 
             fh = open('static/src.txt', 'w')
 
@@ -198,7 +206,11 @@ def get_dbl_source_det():
         #  If DB last updated longer than 5 minutes
 
         srcdetdb = tinydb_src.table('src_det')
-        tinydb_src_det.drop_table('src_det')
+        try:
+            tinydb_src_det.drop_table('src_det')
+        except json.decoder.JSONDecodeError:
+            logging.info('{} database corrupted, recreating.'.format(src_det_database))
+            recreate_db(src_det_database)
 
         """Retrieve src hosts with specific detection(s)"""
 
@@ -229,8 +241,12 @@ def get_dbl_source_det():
             retrieve_hosts(args, srcdetdb)
 
             ip_addrs = []
-            ip_addrs += ['{ip}\n'.format(ip=host['ip']) for host in srcdetdb]
-            ip_addrs = set(ip_addrs)
+            try:
+                ip_addrs += ['{ip}\n'.format(ip=host['ip']) for host in srcdetdb]
+                ip_addrs = set(ip_addrs)
+            except json.decoder.JSONDecodeError:
+                logging.info('{} database corrupted, recreating.'.format(src_det_database))
+                recreate_db(src_det_database)
 
             fh = open('static/src_det.txt', 'w')
 
@@ -259,7 +275,11 @@ def get_dbl_dst():
     if update_needed(os.path.abspath(dest_database), 5):
         #  If DB last updated longer than 5 minutes
         destdb = tinydb_dest.table('dest')
-        tinydb_dest.drop_table('dest')
+        try:
+            tinydb_dest.drop_table('dest')
+        except json.decoder.JSONDecodeError:
+            logging.info('{} database corrupted, recreating.'.format(dest_database))
+            recreate_db(dest_database)
 
         """Retrieve detections"""
 
@@ -292,9 +312,13 @@ def get_dbl_dst():
                 retrieve_detections(intel, destdb)
 
             ip_addrs = []
-            for dest_detection in destdb:
-                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in dest_detection['dst_ips']]
-            ip_addrs = set(ip_addrs)
+            try:
+                for dest_detection in destdb:
+                    ip_addrs += ['{ip}\n'.format(ip=ip) for ip in dest_detection['dst_ips']]
+                ip_addrs = set(ip_addrs)
+            except json.decoder.JSONDecodeError:
+                logging.info('{} database corrupted, recreating.'.format(dest_database))
+                recreate_db(dest_database)
 
             fh = open('static/dest.txt', 'w')
 
@@ -324,8 +348,12 @@ def get_dbl_tc_dst():
     if update_needed(os.path.abspath(tc_dest_database), 5):
         #  If DB last updated longer than 5 minutes
         tcdestdb = init_db(tc_dest_database, 'tcdest')
-        tinydb_tc_dest.drop_table('tcdest')
-   
+        try:
+            tinydb_tc_dest.drop_table('tcdest')
+        except json.decoder.JSONDecodeError:
+            logging.info('{} database corrupted, recreating.'.format(tc_dest_database))
+            recreate_db(tc_dest_database)
+
         """Retrieve detections"""
 
         with open('config.json') as json_config:
@@ -351,15 +379,18 @@ def get_dbl_tc_dst():
         if untriaged_only:
             intel.update({'triaged': 'false'})
         if dst_wl:
-            intel.update({'dst_wl':dst_wl})
+            intel.update({'dst_wl': dst_wl})
 
         retrieve_c2hosts(intel, tcdestdb)
 
         ip_addrs = []
-        for tcdest in tcdestdb:
-            ip_addrs += ['{ip}\n'.format(ip=ip) for ip in tcdest['dst_ips']]
-
-        ip_addrs = set(ip_addrs)
+        try:
+            for tcdest in tcdestdb:
+                ip_addrs += ['{ip}\n'.format(ip=ip) for ip in tcdest['dst_ips']]
+            ip_addrs = set(ip_addrs)
+        except json.decoder.JSONDecodeError:
+            logging.info('{} database corrupted, recreating.'.format(tc_dest_database))
+            recreate_db(tc_dest_database)
 
         fh = open('static/tc_dest.txt', 'w')
         if ip_addrs:
