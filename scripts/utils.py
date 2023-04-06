@@ -10,6 +10,7 @@ from tinydb import TinyDB
 import json
 import ipaddress
 
+
 def init_db(db_file, table):
     '''
     Routine to initialize database file handling a corrupted db by deleting the file and re-initializing.
@@ -30,6 +31,17 @@ def init_db(db_file, table):
         dbt = db.table(table)
         return dbt
     return dbt
+
+
+def recreate_db(db_file):
+    '''
+    Routine to recreate database file handling a corrupted db by deleting the file and re-creating
+    :param db_file: database file
+    :return:
+    '''
+
+    os.remove(db_file)
+    TinyDB(db_file)
 
 
 def update_needed(db_name, minutes):
